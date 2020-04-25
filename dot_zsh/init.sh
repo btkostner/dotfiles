@@ -34,4 +34,5 @@ for plugin ($ZSH/plugins/*/); do
   fi
 done
 
-source "$ZSH/plugins/liquidprompt/liquid.theme"
+source "$ZSH/colors/base16-tomorrow-night.sh"
+source "$ZSH/themes/liquidprompt/liquidprompt"
