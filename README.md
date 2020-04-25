@@ -25,14 +25,16 @@ curl -sfL https://git.io/chezmoi | sh
 Then you will init the repository with:
 
 ```sh
-chezmoi init https://github.com/btkostner/dotfiles.git
+~/bin/chezmoi init https://github.com/btkostner/dotfiles.git
 ```
 
 If you are setting up a new install, you can simply init and apply all in the
 same command with:
 
 ```sh
-chezmoi init --apply --verbose https://github.com/btkostner/dotfiles.git
+~/bin/chezmoi init --apply --verbose https://github.com/btkostner/dotfiles.git
 ```
 
+Once chezmoi has been applyed for the first time, you can just run `chezmoi`
+instead of `~/bin/chezmoi`. Happy hunting!
 
