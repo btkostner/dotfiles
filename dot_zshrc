@@ -1,0 +1,10 @@
+export PATH=$HOME/.bin:$PATH
+export ZDOTDIR=$HOME/.zsh
+
+source $ZDOTDIR/init.sh
+
+if [[ -n $SSH_CONNECTION ]]; then
+  export EDITOR='vim'
+else
+  export EDITOR='mvim'
+fi
