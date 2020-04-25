@@ -2,7 +2,7 @@
 
 cd /tmp
 
-wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb
+wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb -O chrome.deb
 
-sudo dpkg -i google-chrome-beta_current_amd64.deb
-sudo apt install -f
+sudo dpkg -i chrome.deb
+sudo apt install -fy
