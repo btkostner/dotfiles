@@ -1,0 +1,6 @@
+packages: [
+  "gtk-dark-theme"
+  "language-vue"
+  "package-sync"
+  "project-manager"
+]

@@ -1,0 +1,10 @@
+[
+  {
+    title: "Infrastructure"
+    group: "elementary"
+    paths: [
+      "/home/btkostner/Projects/elementary/infrastructure"
+    ]
+    color: "#3689e6"
+  }
+]

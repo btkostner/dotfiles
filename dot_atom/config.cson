@@ -1,0 +1,21 @@
+"*":
+  core:
+    autoHideMenuBar: true
+    closeDeletedFileTabs: true
+    projectHome: "/home/btkostner/Projects"
+    telemetryConsent: "limited"
+    themes: [
+      "one-dark-ui"
+      "base16-tomorrow-dark-theme"
+    ]
+  "exception-reporting":
+    userId: "588896d3-eb0d-4afb-84bf-43b9a2c43776"
+  "package-sync":
+    createOnChange: true
+  "project-manager":
+    includeGitRepositories: true
+    sortBy: "last modified"
+  "status-bar":
+    isVisible: false
+  welcome:
+    showOnStartup: false
