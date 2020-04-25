@@ -1,0 +1,224 @@
+PubkeyAcceptedKeyTypes=+ssh-dss
+
+#
+# Services
+#
+
+Host github.com GitHub
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/github
+
+Host LP
+  HostName launchpad.net
+  User btkostner
+  IdentityFile ~/.ssh/launchpad
+
+#
+# Personal Servers
+#
+
+Host 192.168.1.1
+  HostName 71.218.143.166
+  User root
+  PreferredAuthentications password
+
+Host 192.168.13.2 Caprica
+  HostName 192.168.13.2
+  User btkostner
+  PreferredAuthentications password
+
+Host 192.168.13.3 Picon
+  HostName 192.168.13.3
+  User btkostner
+  IdentityFile ~/.ssh/oneupthree
+
+Host 192.168.13.5 Ragnar
+  HostName 192.168.13.5
+  User btkostner
+  PreferredAuthentications password
+
+#
+# System76 Servers
+#
+
+Host 10.17.89.3 buildchain-system76
+  HostName 10.17.89.3
+  User buildchain
+  IdentityFile ~/.ssh/system76
+
+Host ec2-34-209-124-195.us-west-2.compute.amazonaws.com mattermost-system76
+  HostName ec2-34-209-124-195.us-west-2.compute.amazonaws.com
+  User btkostner
+  IdentityFile ~/.ssh/system76
+
+Host ec2-54-185-158-67.us-west-2.compute.amazonaws.com frontend-genesis76.com
+  HostName ec2-54-185-158-67.us-west-2.compute.amazonaws.com
+  User btkostner
+  IdentityFile ~/.ssh/system76
+
+Host ec2-34-215-205-32.us-west-2.compute.amazonaws.com frontend1-system76
+  HostName ec2-34-215-205-32.us-west-2.compute.amazonaws.com
+  User btkostner
+  IdentityFile ~/.ssh/system76
+
+Host ec2-54-184-217-189.us-west-2.compute.amazonaws.com frontend2-system76
+  HostName ec2-54-184-217-189.us-west-2.compute.amazonaws.com
+  User btkostner
+  IdentityFile ~/.ssh/system76
+
+Host ec2-34-220-104-136.us-west-2.compute.amazonaws.com frontend3-system76
+  HostName ec2-34-220-104-136.us-west-2.compute.amazonaws.com
+  User btkostner
+  IdentityFile ~/.ssh/system76
+
+Host ec2-54-213-217-196.us-west-2.compute.amazonaws.com frontend4-system76
+  HostName ec2-54-213-217-196.us-west-2.compute.amazonaws.com
+  User btkostner
+  IdentityFile ~/.ssh/system76
+
+Host ec2-52-34-101-99.us-west-2.compute.amazonaws.com joshua-genesis76
+  HostName ec2-52-34-101-99.us-west-2.compute.amazonaws.com
+  User ubuntu
+  IdentityFile ~/.ssh/system76-old
+
+Host ec2-34-221-164-114.us-west-2.compute.amazonaws.com nginx-genesis76
+  HostName ec2-34-221-164-114.us-west-2.compute.amazonaws.com
+  User btkostner
+  IdentityFile ~/.ssh/system76
+
+Host ec2-52-12-192-178.us-west-2.compute.amazonaws.com joshua1-system76
+  HostName ec2-52-12-192-178.us-west-2.compute.amazonaws.com
+  User btkostner
+  IdentityFile ~/.ssh/system76
+
+Host ec2-54-245-153-133.us-west-2.compute.amazonaws.com joshua2-system76
+  HostName ec2-54-245-153-133.us-west-2.compute.amazonaws.com
+  User btkostner
+  IdentityFile ~/.ssh/system76
+
+Host ec2-18-236-141-74.us-west-2.compute.amazonaws.com hal-genesis76
+  HostName ec2-18-236-141-74.us-west-2.compute.amazonaws.com
+  User ubuntu
+  IdentityFile ~/.ssh/system76
+
+Host ec2-34-219-11-197.us-west-2.compute.amazonaws.com hal1-system76
+  HostName ec2-34-219-11-197.us-west-2.compute.amazonaws.com
+  User ubuntu
+  IdentityFile ~/.ssh/system76
+
+Host ec2-34-220-47-166.us-west-2.compute.amazonaws.com hal2-system76
+  HostName ec2-34-220-47-166.us-west-2.compute.amazonaws.com
+  User ubuntu
+  IdentityFile ~/.ssh/system76
+
+Host ec2-18-236-149-136.us-west-2.compute.amazonaws.com nginx-system76
+  HostName ec2-18-236-149-136.us-west-2.compute.amazonaws.com
+  User btkostner
+  IdentityFile ~/.ssh/system76
+
+Host ec2-54-187-235-20.us-west-2.compute.amazonaws.com beansbooks-system76
+  HostName ec2-54-187-235-20.us-west-2.compute.amazonaws.com
+  User btkostner
+  IdentityFile ~/.ssh/system76
+
+Host ec2-34-212-226-86.us-west-2.compute.amazonaws.com support-wiki-system76
+  HostName ec2-34-212-226-86.us-west-2.compute.amazonaws.com
+  User btkostner
+  IdentityFile ~/.ssh/system76
+
+Host ec2-34-222-139-80.us-west-2.compute.amazonaws.com beebee-system76
+  HostName ec2-34-222-139-80.us-west-2.compute.amazonaws.com
+  User btkostner
+  IdentityFile ~/.ssh/system76
+
+Host 52.37.170.44 buildserver-system76
+  HostName 52.37.170.44
+  User ubuntu
+  IdentityFile ~/.ssh/system76
+
+#
+# System76 Internal Servers
+#
+
+Host tribble-lab-system76
+  User root
+  HostName 10.17.75.6
+  IdentityFile ~/.ssh/system76-rackspace
+
+#
+# System76 Pop Servers
+#
+
+Host ec2-52-38-47-2.us-west-2.compute.amazonaws.com apt-pop-os
+  User ubuntu
+  HostName ec2-52-38-47-2.us-west-2.compute.amazonaws.com
+  IdentityFile ~/.ssh/system76m.pem
+
+#
+# System76 Rackspace Servers
+#
+
+Host mugato-system76
+  User ubuntu
+  HostName 166.78.116.160
+  IdentityFile ~/.ssh/system76-rackspace
+
+Host tribble-system76
+  User root
+  HostName 192.237.181.167
+  IdentityFile ~/.ssh/system76-rackspace
+
+#
+# elementary Servers
+#
+
+Host alpha.elementary.io
+  User btkostner
+  IdentityFile ~/.ssh/elementary
+  ForwardAgent yes
+
+Host bravo.elementary.io
+  User btkostner
+  IdentityFile ~/.ssh/elementary
+  ForwardAgent yes
+
+Host charlie.elementary.io
+  User btkostner
+  IdentityFile ~/.ssh/elementary
+  ForwardAgent yes
+
+Host delta.elementary.io
+  User btkostner
+  IdentityFile ~/.ssh/elementary
+  ForwardAgent yes
+
+Host echo.elementary.io
+  User btkostner
+  IdentityFile ~/.ssh/elementary
+  ForwardAgent yes
+
+Host foxtrot.elementary.io
+  User btkostner
+  IdentityFile ~/.ssh/elementary
+  ForwardAgent yes
+
+Host golf.elementary.io
+  User btkostner
+  IdentityFile ~/.ssh/elementary
+  ForwardAgent yes
+
+Host hotel.elementary.io
+  User btkostner
+  IdentityFile ~/.ssh/elementary
+  ForwardAgent yes
+
+#
+# eustsay Servers
+#
+
+Host alpha.eustasy.elementary.io
+  User btkostner
+  IdentityFile ~/.ssh/elementary
+  IdentitiesOnly yes
+
