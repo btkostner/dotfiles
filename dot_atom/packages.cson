@@ -1,5 +1,6 @@
 packages: [
   "gtk-dark-theme"
+  "language-terraform"
   "language-vue"
   "package-sync"
   "project-manager"
