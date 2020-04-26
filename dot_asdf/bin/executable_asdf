@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+
+# shellcheck source=lib/utils.bash
+source "$(dirname "$(dirname "$0")")/lib/utils.bash"
+
+find_cmd() {
+  local cmd_dir="$1"
+  shift
+
+  local cmd_name
+  local args_offset="$#"
+  cmd_name="command-$(echo "${@:1:${args_offset}}" | tr ' ' '-').bash"
+  while [ ! -f "$cmd_dir/$cmd_name" ] && [ "$args_offset" -gt 0 ]; do
+    args_offset=$((args_offset - 1))
+    cmd_name="command-$(echo "${@:1:${args_offset}}" | tr ' ' '-').bash"
+  done
+
+  if [ -f "$cmd_dir/$cmd_name" ]; then
+    echo "$cmd_dir/$cmd_name" "$((args_offset + 1))"
+  elif [ -f "$cmd_dir/command.bash" ]; then
+    echo "$cmd_dir/command.bash" 1
+  fi
+}
+
+find_asdf_cmd() {
+  local asdf_cmd_dir
+  asdf_cmd_dir="$(asdf_dir)/lib/commands"
+  case "$1" in
+    'exec' | 'current' | 'env' | 'global' | 'install' | 'latest' | 'local' | \
+      'reshim' | 'uninstall' | 'update' | 'where' | 'which' | \
+      'export-shell-version')
+      echo "$asdf_cmd_dir/command-$1.bash" 2
+      ;;
+
+    '' | '--help' | '-h' | 'help')
+      echo "$asdf_cmd_dir/command-help.bash" 2
+      ;;
+
+    '--version' | 'version')
+      echo "$asdf_cmd_dir/command-version.bash" 2
+      ;;
+
+    *)
+      find_cmd "$asdf_cmd_dir" "$@"
+      ;;
+  esac
+}
+
+find_plugin_cmd() {
+  local ASDF_CMD_FILE args_offset
+  if [ -d "$(get_plugin_path "$1")/bin" ]; then
+    IFS=' ' read -r ASDF_CMD_FILE args_offset <<<"$(find_cmd "$(get_plugin_path "$1")/lib/commands" "${@:2}")"
+    if [ -n "$ASDF_CMD_FILE" ]; then
+      args_offset=$((args_offset + 1)) # since the first argument is the plugin name
+      echo "$ASDF_CMD_FILE" "$args_offset"
+    fi
+  fi
+}
+
+asdf_cmd() {
+  local ASDF_CMD_FILE args_offset
+
+  if [ "shell" == "$1" ]; then
+    echo "Shell integration is not enabled. Please ensure you source asdf in your shell setup." >&2
+    exit 1
+  fi
+
+  IFS=' ' read -r ASDF_CMD_FILE args_offset <<<"$(find_asdf_cmd "$@")"
+  if [ -z "$ASDF_CMD_FILE" ]; then
+    IFS=' ' read -r ASDF_CMD_FILE args_offset <<<"$(find_plugin_cmd "$@")"
+  fi
+
+  if [ -x "$ASDF_CMD_FILE" ]; then
+    exec "$ASDF_CMD_FILE" "${@:${args_offset}}"
+  elif [ -f "$ASDF_CMD_FILE" ]; then
+    set -- "${@:${args_offset}}"
+    source "$ASDF_CMD_FILE"
+  else
+    local asdf_cmd_dir
+    asdf_cmd_dir="$(asdf_dir)/lib/commands"
+    echo "Unknown command: \`asdf ${*}\`" >&2
+    source "$asdf_cmd_dir/command-help.bash" >&2
+    return 127
+  fi
+}
+
+asdf_cmd "$@"

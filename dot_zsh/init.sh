@@ -41,5 +41,7 @@ for exports ($ZSH/exports/*); do
   source $exports
 done
 
+source "$HOME/.asdf/asdf.sh"
+
 source "$ZSH/colors/base16-tomorrow-night.sh"
 source "$ZSH/themes/liquidprompt/liquidprompt"
