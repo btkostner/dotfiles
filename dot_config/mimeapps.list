@@ -1,0 +1,6 @@
+[Default Applications]
+text/html=google-chrome-beta.desktop
+x-scheme-handler/http=google-chrome-beta.desktop
+x-scheme-handler/https=google-chrome-beta.desktop
+x-scheme-handler/about=google-chrome-beta.desktop
+x-scheme-handler/unknown=google-chrome-beta.desktop

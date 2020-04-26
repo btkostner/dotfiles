@@ -7,4 +7,12 @@
     ]
     color: "#3689e6"
   }
+  {
+    title: "dotfiles"
+    group: "btkostner"
+    paths: [
+      "/home/btkostner/.local/share/chezmoi"
+    ]
+    color: "#ffa500"
+  }
 ]
