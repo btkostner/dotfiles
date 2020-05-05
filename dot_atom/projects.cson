@@ -1,12 +1,20 @@
 [
   {
-    title: "Infrastructure"
+    title: "infrastructure"
     group: "elementary"
     paths: [
       "/home/btkostner/Projects/elementary/infrastructure"
     ]
     color: "#3689e6"
   }
+    {
+      title: "payments"
+      group: "elementary"
+      paths: [
+        "/home/btkostner/Projects/elementary/payments"
+      ]
+      color: "#3689e6"
+    }
   {
     title: "dotfiles"
     group: "btkostner"
@@ -15,4 +23,20 @@
     ]
     color: "#ffa500"
   }
+  {
+    title: "website"
+    group: "pop-os"
+    paths: [
+      "/home/btkostner/Projects/pop-os/website"
+    ]
+    color: "#48b9c7"
+  }
+    {
+      title: "artoo"
+      group: "system76"
+      paths: [
+        "/home/btkostner/Projects/system76/artoo"
+      ]
+      color: "#574f4a"
+    }
 ]
