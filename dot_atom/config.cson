@@ -1,4 +1,7 @@
 "*":
+  "atom-beautify":
+    general:
+      _analyticsUserId: "4149e456-3dd1-46fd-9d27-b53b1da9fb0f"
   core:
     autoHideMenuBar: true
     closeDeletedFileTabs: true
@@ -8,6 +11,7 @@
       "one-dark-ui"
       "base16-tomorrow-dark-theme"
     ]
+  editor: {}
   "exception-reporting":
     userId: "588896d3-eb0d-4afb-84bf-43b9a2c43776"
   "package-sync":
@@ -15,7 +19,6 @@
   "project-manager":
     includeGitRepositories: true
     sortBy: "last modified"
-  "status-bar":
-    isVisible: false
+  "status-bar": {}
   welcome:
     showOnStartup: false
