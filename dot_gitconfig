@@ -1,5 +1,6 @@
 [core]
-  editor = vim
+  editor = nano
+  pager = "less -FRX"
 
 [user]
   email = git@btkostner.io
