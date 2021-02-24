@@ -5,13 +5,18 @@
   core:
     autoHideMenuBar: true
     closeDeletedFileTabs: true
+    disabledPackages: [
+      "github"
+    ]
     projectHome: "/home/btkostner/Projects"
     telemetryConsent: "limited"
     themes: [
       "one-dark-ui"
       "base16-tomorrow-dark-theme"
     ]
-  editor: {}
+  editor:
+    preferredLineLength: 120
+    showInvisibles: true
   "exception-reporting":
     userId: "588896d3-eb0d-4afb-84bf-43b9a2c43776"
   "package-sync":
@@ -20,5 +25,6 @@
     includeGitRepositories: true
     sortBy: "last modified"
   "status-bar": {}
+  "tree-view": {}
   welcome:
     showOnStartup: false
