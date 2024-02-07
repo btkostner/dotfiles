@@ -1,0 +1,17 @@
+[settings]
+always_keep_download = true
+always_keep_install = true
+env_file = "env"
+asdf_compat = true
+experimental = true
+not_found_auto_install = false
+trusted_config_paths = [
+  "~/Projects/github.com/btkostner",
+  "~/Projects/github.com/stordco"
+]
+
+[tools]
+act = "latest"
+elixir = "latest"
+erlang = "latest"
+zig = "latest"

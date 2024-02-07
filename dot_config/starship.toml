@@ -1,0 +1,225 @@
+# Get editor completions based on the config schema
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# Inserts a blank line between shell prompts
+add_newline = true
+
+[character]
+success_symbol = "[>](bold green)"
+error_symbol = "[x](bold red)"
+vimcmd_symbol = "[<](bold green)"
+
+[git_commit]
+tag_symbol = " tag "
+
+[git_status]
+ahead = ">"
+behind = "<"
+diverged = "<>"
+renamed = "r"
+deleted = "x"
+
+[aws]
+disabled = true
+
+[azure]
+disabled = true
+
+[bun]
+disabled = true
+
+[c]
+disabled = true
+
+[cobol]
+disabled = true
+
+[conda]
+disabled = true
+
+[crystal]
+disabled = true
+
+[cmake]
+disabled = true
+
+[daml]
+disabled = true
+
+[dart]
+disabled = true
+
+[deno]
+disabled = true
+
+[dotnet]
+disabled = true
+
+[directory]
+read_only = " ro"
+
+[docker_context]
+disabled = true
+
+[elixir]
+symbol = "elixir "
+
+[elm]
+disabled = true
+
+[fennel]
+disabled = true
+
+[fossil_branch]
+disabled = true
+
+[gcloud]
+symbol = "gcp "
+
+[git_branch]
+symbol = "git "
+
+[golang]
+symbol = "go "
+
+[gradle]
+disabled = true
+
+[guix_shell]
+disabled = true
+
+[hg_branch]
+disabled = true
+
+[java]
+disabled = true
+
+[julia]
+disabled = true
+
+[kotlin]
+disabled = true
+
+[lua]
+symbol = "lua "
+
+[nodejs]
+symbol = "nodejs "
+
+[memory_usage]
+disabled = true
+
+[meson]
+disabled = true
+
+[nim]
+disabled = true
+
+[nix_shell]
+disabled = true
+
+[ocaml]
+disabled = true
+
+[opa]
+disabled = true
+
+[os.symbols]
+Alpaquita = "alq "
+Alpine = "alp "
+Amazon = "amz "
+Android = "andr "
+Arch = "rch "
+Artix = "atx "
+CentOS = "cent "
+Debian = "deb "
+DragonFly = "dfbsd "
+Emscripten = "emsc "
+EndeavourOS = "ndev "
+Fedora = "fed "
+FreeBSD = "fbsd "
+Garuda = "garu "
+Gentoo = "gent "
+HardenedBSD = "hbsd "
+Illumos = "lum "
+Linux = "lnx "
+Mabox = "mbox "
+Macos = "mac "
+Manjaro = "mjo "
+Mariner = "mrn "
+MidnightBSD = "mid "
+Mint = "mint "
+NetBSD = "nbsd "
+NixOS = "nix "
+OpenBSD = "obsd "
+OpenCloudOS = "ocos "
+openEuler = "oeul "
+openSUSE = "osuse "
+OracleLinux = "orac "
+Pop = "pop "
+Raspbian = "rasp "
+Redhat = "rhl "
+RedHatEnterprise = "rhel "
+Redox = "redox "
+Solus = "sol "
+SUSE = "suse "
+Ubuntu = "ubnt "
+Unknown = "unk "
+Windows = "win "
+
+[package]
+disabled = true
+
+[perl]
+disabled = true
+
+[php]
+disabled = true
+
+[pijul_channel]
+disabled = true
+
+[pulumi]
+disabled = true
+
+[purescript]
+disabled = true
+
+[python]
+disabled = true
+
+[raku]
+disabled = true
+
+[ruby]
+disabled = true
+
+[rust]
+symbol = "rust "
+
+[scala]
+disabled = true
+
+[spack]
+disabled = true
+
+[solidity]
+disabled = true
+
+[status]
+symbol = "[x](bold red) "
+
+[sudo]
+symbol = "sudo "
+
+[swift]
+disabled = true
+
+[typst]
+disabled = true
+
+[terraform]
+symbol = "terraform "
+
+[zig]
+disabled = true
