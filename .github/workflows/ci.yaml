@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Install (Chezmoi)
-        run: sh -c "$(curl -fsLS get.chezmoi.io)"
+        run: apt install chezmoi
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,7 +35,7 @@ jobs:
 
     steps:
       - name: Install (Chezmoi)
-        run: sh -c "$(curl -fsLS get.chezmoi.io)"
+        run: brew install chezmoi
 
       - name: Checkout
         uses: actions/checkout@v4
