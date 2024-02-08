@@ -1,0 +1,41 @@
+{{- $miseLatest := (gitHubLatestRelease "jdx/mise").TagName -}}
+{{- $miseOsNameDict := dict "linux" "linux" "darwin" "macos" "windows" "INVALID_OS" -}}
+{{- $miseOsName := (get $miseOsNameDict .chezmoi.os) -}}
+{{- $miseOsArchDict := dict "amd64" "x64" "arm64" "arm64" -}}
+{{- $miseOsArch := (get $miseOsArchDict .chezmoi.arch) -}}
+
+{{- $zoxideLatest := (gitHubLatestRelease "ajeetdsouza/zoxide").Name -}}
+{{- $zoxideOsArchDict := dict "amd64" "x86_64" "arm64" "aarch64" -}}
+{{- $zoxideOsArch := (get $zoxideOsArchDict .chezmoi.arch) -}}
+{{- $zoxideOsNameDict := dict "linux" "unknown-linux-musl" "darwin" "apple-darwin" "windows" "pc-windows-msvc" -}}
+{{- $zoxideOsName := (get $zoxideOsNameDict .chezmoi.os) -}}
+
+{{- $nvimLatest := (gitHubLatestRelease "AstroNvim/AstroNvim").TagName -}}
+
+{{- $nerdFontsLatest := (gitHubLatestRelease "ryanoasis/nerd-fonts").TagName -}}
+{{- $fontPathDict := dict "linux" ".fonts" "darwin" "Library/Fonts" "windows" "AppData/Local/Microsoft/Windows/Fonts" -}}
+{{- $fontDir := osClean (get $fontPathDict .chezmoi.os) -}}
+
+[".local/bin/mise"]
+type = "archive-file"
+url = "https://github.com/jdx/mise/releases/download/{{ $miseLatest }}/mise-{{ $miseLatest }}-{{ $miseOsName }}-{{ $miseOsArch }}.tar.gz"
+path = "mise/bin/mise"
+executable = true
+refreshPeriod = "168h"
+
+[".local/bin/zoxide"]
+type = "archive-file"
+url = "https://github.com/ajeetdsouza/zoxide/releases/download/v{{ $zoxideLatest }}/zoxide-{{ $zoxideLatest }}-{{ $zoxideOsArch }}-{{ $zoxideOsName }}.tar.gz"
+path = "zoxide"
+executable = true
+refreshPeriod = "168h"
+
+[".config/nvim"]
+type = "archive"
+url = "https://github.com/AstroNvim/AstroNvim/archive/refs/tags/{{ $nvimLatest }}.tar.gz"
+refreshPeriod = "168h"
+
+["{{ $fontDir }}/FiraCode"]
+type = "archive"
+url = "https://github.com/ryanoasis/nerd-fonts/releases/download/{{ $nerdFontsLatest }}/FiraCode.zip"
+refreshPeriod = "168h"
