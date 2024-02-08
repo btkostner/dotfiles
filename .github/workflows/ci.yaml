@@ -22,16 +22,13 @@ jobs:
 
     steps:
       - name: Install (Chezmoi)
-        run: sudo apt update && sudo apt install -y chezmoi
+        run: brew install chezmoi
 
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Init
-        run: chezmoi init --source $(pwd)
-
       - name: Apply
-        run: chezmoi apply
+        run: chezmoi apply --source $(pwd) --no-tty --force
 
   macOS:
     runs-on: macos-latest
@@ -43,8 +40,5 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Init
-        run: chezmoi init --source $(pwd)
-
       - name: Apply
-        run: chezmoi apply
+        run: chezmoi apply --source $(pwd) --no-tty --force
