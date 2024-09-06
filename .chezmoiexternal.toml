@@ -1,0 +1,23 @@
+[".local/bin/mise"]
+type = "archive-file"
+url = "https://github.com/jdx/mise/releases/download/v2024.9.0/mise-v2024.9.0-macos-arm64.tar.gz"
+path = "mise/bin/mise"
+executable = true
+refreshPeriod = "168h"
+
+[".local/bin/zoxide"]
+type = "archive-file"
+url = "https://github.com/ajeetdsouza/zoxide/releases/download/v0.9.4/zoxide-0.9.4-aarch64-apple-darwin.tar.gz"
+path = "zoxide"
+executable = true
+refreshPeriod = "168h"
+
+[".config/nvim"]
+type = "archive"
+url = "https://github.com/AstroNvim/AstroNvim/archive/refs/tags/v4.25.1.tar.gz"
+refreshPeriod = "168h"
+
+["Library/Fonts/FiraCode"]
+type = "archive"
+url = "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/FiraCode.zip"
+refreshPeriod = "168h"

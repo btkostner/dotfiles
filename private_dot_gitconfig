@@ -4,7 +4,7 @@
 	signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE8t3C3+tYetBjoJ7YKF5qMw9ZkCRC+2KBb9/3Aai9x+
 
 [core]
-        excludesFile = ~/.gitignore
+    excludesFile = ~/.gitignore
 
 [init]
 	defaultBranch = main
@@ -26,5 +26,4 @@
 	gpgsign = true
 
 [url "git@github.com:"]
-        insteadOf = https://github.com/
-
+    insteadOf = https://github.com/

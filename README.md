@@ -41,3 +41,11 @@ There are a couple of "patterns" or "groups" my setup usually follows:
 - [Soulver 3](https://soulver.app/) for quick calculations. If you've never used an app like this, I'd highly recommend having it in your toolbox. It's a much nicer calculator, with unit conversions, and variable support. It's like psudo code for math.
 
 - [Swish](https://highlyopinionated.co/swish/) for window managment. I love tiling window managers, but also with a mix of floating windows. Swish is the best of both worlds and allows me to use this beautiful large macbook touchpad to it's full potential. Plus it supports gaps!
+
+## Applying
+
+So future me, you have a new computer and want to set it up. First off, congrats. Second, run you'll need to install Homebrew, then run this command:
+
+```sh
+chezmoi apply --source github.com/btkostner/dotfiles
+```

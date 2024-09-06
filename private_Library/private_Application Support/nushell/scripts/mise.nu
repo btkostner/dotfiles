@@ -1,20 +1,17 @@
 export-env {
   $env.MISE_SHELL = "nu"
+  let mise_hook = {
+    condition: { "MISE_SHELL" in $env }
+    code: { mise_hook }
+  }
+  add-hook hooks.pre_prompt $mise_hook
+  add-hook hooks.env_change.PWD $mise_hook
+}
 
-  $env.config = ($env.config | upsert hooks {
-      pre_prompt: ($env.config.hooks.pre_prompt ++
-      [{
-      condition: {|| "MISE_SHELL" in $env }
-      code: {|| mise_hook }
-      }])
-      env_change: {
-          PWD: ($env.config.hooks.env_change.PWD ++
-          [{
-          condition: {|| "MISE_SHELL" in $env }
-          code: {|| mise_hook }
-          }])
-      }
-  })
+def --env add-hook [field: cell-path new_hook: any] {
+  let old_config = $env.config? | default {}
+  let old_hooks = $old_config | get $field --ignore-errors | default []
+  $env.config = ($old_config | upsert $field ($old_hooks ++ $new_hook))
 }
 
 def "parse vars" [] {
@@ -25,15 +22,15 @@ def --wrapped mise [command?: string, --help, ...rest: string] {
   let commands = ["shell", "deactivate"]
 
   if ($command == null) {
-    ^"/Users/blake.kostner/.local/bin/mise"
+    ^"mise"
   } else if ($command == "activate") {
     $env.MISE_SHELL = "nu"
   } else if ($command in $commands) {
-    ^"/Users/blake.kostner/.local/bin/mise" $command ...$rest
+    ^"mise" $command ...$rest
     | parse vars
     | update-env
   } else {
-    ^"/Users/blake.kostner/.local/bin/mise" $command ...$rest
+    ^"mise" $command ...$rest
   }
 }
 
@@ -48,7 +45,7 @@ def --env "update-env" [] {
 }
 
 def --env mise_hook [] {
-  ^"/Users/blake.kostner/.local/bin/mise" hook-env -s nu
+  ^"mise" hook-env -s nu
     | parse vars
     | update-env
 }
