@@ -29,5 +29,11 @@ dynamic_padding = true
 
 decorations = "Transparent"
 
+[keyboard]
+bindings = [
+  { key = "T", mods = "Command", action = "CreateNewtab" },
+  { key = "N", mods = "Control|Shift", action = "CreateNewWindow" }
+]
+
 [shell]
 program = "/opt/homebrew/bin/nu"

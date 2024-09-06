@@ -1,0 +1,61 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run the `open default settings` command
+// from the command palette or from `Zed` application menu.
+{
+  "language_models": {
+    "anthropic": {
+            "version": "1"
+        }
+  },
+  "assistant": {
+    "default_model": {
+      "provider": "anthropic",
+      "model": "claude-3-5-sonnet-20240620"
+    },
+    "version": "2",
+    "provider": null
+  },
+  "buffer_font_size": 16,
+  "elixir": {
+    // Change the LSP zed uses for elixir.
+    // Note that changing this setting requires a restart of Zed
+    // to take effect.
+    //
+    // May take 3 values:
+    //  1. Use the standard ElixirLS, this is the default
+    //         "lsp": "elixir_ls"
+    //  2. Use the experimental NextLs
+    //         "lsp": "next_ls",
+    //  3. Use a language server installed locally on your machine:
+    //         "lsp": {
+    //           "local": {
+    //             "path": "~/next-ls/bin/start",
+    //             "arguments": ["--stdio"]
+    //            }
+    //          },
+    //
+    "lsp": "elixir_ls"
+  },
+  "terminal": {
+    "detect_venv": {
+      "on": {
+        "activate_script": "nushell"
+      }
+    },
+    "line_height": "standard",
+    "shell": {
+      "program": "nu"
+    }
+  },
+  "theme": "One Dark",
+  "ui_font_features": {
+    // Disable ligatures:
+    "calt": true
+  },
+  "ui_font_size": 16
+}

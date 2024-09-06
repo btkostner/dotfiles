@@ -104,6 +104,7 @@ $env.PATH = (
         $env.PATH |
         split row (char esep) |
         prepend '/opt/homebrew/bin' |
+        prepend '/usr/local/bin' |
         prepend '~/.local/share/mise/shims' |
         prepend '~/.local/bin' |
         prepend '~/.krew/bin'
@@ -114,3 +115,21 @@ $env.PATH = (
 $env.CPPFLAGS = $"($env | get --ignore-errors CPPFLAGS | default "") -I/opt/homebrew/opt/unixodbc/include"
 $env.LDFLAGS = $"($env | get --ignore-errors LDFLAGS | default "") -L/opt/homebrew/opt/unixodbc/lib"
 $env.KERL_CONFIGURE_OPTIONS = $"--with-odbc=/opt/homebrew/opt/unixodbc --with-ssl=$(brew --prefix openssl) --disable-jit"
+
+# Setup pnpm environment
+
+$env.PNPM_HOME = $"/Users/blake.kostner/Library/pnpm"
+
+# Add to the environment
+
+$env.PATH = (
+        $env.PATH |
+        split row (char esep) |
+        prepend '/opt/homebrew/bin' |
+        prepend '/usr/local/bin' |
+        prepend '~/.local/share/mise/shims' |
+        prepend '~/.local/bin' |
+        prepend '~/.krew/bin' |
+        prepend '~/Library/pnpm'
+)
+

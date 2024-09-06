@@ -136,10 +136,9 @@ let light_theme = {
     shape_vardecl: purple
 }
 
-# External completer example
-# let carapace_completer = {|spans|
-#     carapace $spans.0 nushell $spans | from json
-# }
+let zoxide_completer = {|spans|
+    ...$spans | skip 1 | zoxide query -l $in | lines | where {|x| $x != $env.PWD}
+}
 
 # The default config record. This is where much of your global configuration is setup.
 $env.config = {
@@ -206,16 +205,16 @@ $env.config = {
         case_sensitive: false # set to true to enable case-sensitive completions
         quick: true    # set this to false to prevent auto-selecting completions when only one remains
         partial: true    # set this to false to prevent partial filling of the prompt
-        algorithm: "prefix"    # prefix or fuzzy
+        algorithm: "fuzzy"    # prefix or fuzzy
         external: {
             enable: true # set to false to prevent nushell looking into $env.PATH to find more suggestions, `false` recommended for WSL users as this look up may be very slow
             max_results: 100 # setting it lower can improve completion performance at the cost of omitting some options
-            completer: null # check 'carapace_completer' above as an example
+            completer: $zoxide_completer # check 'carapace_completer' above as an example
         }
     }
 
     filesize: {
-        metric: false # true => KB, MB, GB (ISO standard), false => KiB, MiB, GiB (Windows standard)
+        metric: true # true => KB, MB, GB (ISO standard), false => KiB, MiB, GiB (Windows standard)
         format: "auto" # b, kb, kib, mb, mib, gb, gib, tb, tib, pb, pib, eb, eib, auto
     }
 
@@ -233,7 +232,6 @@ $env.config = {
     use_ansi_coloring: true
     bracketed_paste: true # enable bracketed paste, currently useless on windows
     edit_mode: emacs # emacs, vi
-    shell_integration: true # enables terminal shell integration. Off by default, as some terminals have issues with this.
     render_right_prompt_on_last_line: false # true or false to enable or disable right prompt to be rendered on last line of the prompt.
     use_kitty_protocol: false # enables keyboard enhancement protocol implemented by kitty console, only if your terminal support this.
     highlight_resolved_externals: false # true enables highlighting of external commands in the repl resolved by which.
@@ -309,50 +307,10 @@ $env.config = {
             mode: [emacs vi_normal vi_insert]
             event: {
                 until: [
-                    {send: historyhintcomplete}
+                    { send: historyhintcomplete }
                     { send: menu name: completion_menu }
                     { send: menunext }
                     { edit: complete }
-                ]
-            }
-        }
-        {
-            name: history_menu
-            modifier: control
-            keycode: char_r
-            mode: [emacs, vi_insert, vi_normal]
-            event: { send: menu name: history_menu }
-        }
-        {
-            name: help_menu
-            modifier: none
-            keycode: f1
-            mode: [emacs, vi_insert, vi_normal]
-            event: { send: menu name: help_menu }
-        }
-        {
-            name: completion_previous_menu
-            modifier: shift
-            keycode: backtab
-            mode: [emacs, vi_normal, vi_insert]
-            event: { send: menuprevious }
-        }
-        {
-            name: next_page_menu
-            modifier: control
-            keycode: char_x
-            mode: emacs
-            event: { send: menupagenext }
-        }
-        {
-            name: undo_or_previous_page_menu
-            modifier: control
-            keycode: char_z
-            mode: emacs
-            event: {
-                until: [
-                    { send: menupageprevious }
-                    { edit: undo }
                 ]
             }
         }
@@ -383,20 +341,6 @@ $env.config = {
             keycode: char_l
             mode: [emacs, vi_normal, vi_insert]
             event: { send: clearscreen }
-        }
-        {
-            name: search_history
-            modifier: control
-            keycode: char_q
-            mode: [emacs, vi_normal, vi_insert]
-            event: { send: searchhistory }
-        }
-        {
-            name: open_command_editor
-            modifier: control
-            keycode: char_o
-            mode: [emacs, vi_normal, vi_insert]
-            event: { send: openeditor }
         }
         {
             name: move_up
@@ -447,77 +391,6 @@ $env.config = {
             }
         }
         {
-            name: move_one_word_left
-            modifier: control
-            keycode: left
-            mode: [emacs, vi_normal, vi_insert]
-            event: {edit: movewordleft}
-        }
-        {
-            name: move_one_word_right_or_take_history_hint
-            modifier: control
-            keycode: right
-            mode: [emacs, vi_normal, vi_insert]
-            event: {
-                until: [
-                    {send: historyhintwordcomplete}
-                    {edit: movewordright}
-                ]
-            }
-        }
-        {
-            name: move_to_line_start
-            modifier: none
-            keycode: home
-            mode: [emacs, vi_normal, vi_insert]
-            event: {edit: movetolinestart}
-        }
-        {
-            name: move_to_line_start
-            modifier: control
-            keycode: char_a
-            mode: [emacs, vi_normal, vi_insert]
-            event: {edit: movetolinestart}
-        }
-        {
-            name: move_to_line_end_or_take_history_hint
-            modifier: none
-            keycode: end
-            mode: [emacs, vi_normal, vi_insert]
-            event: {
-                until: [
-                    {send: historyhintcomplete}
-                    {edit: movetolineend}
-                ]
-            }
-        }
-        {
-            name: move_to_line_end_or_take_history_hint
-            modifier: control
-            keycode: char_e
-            mode: [emacs, vi_normal, vi_insert]
-            event: {
-                until: [
-                    {send: historyhintcomplete}
-                    {edit: movetolineend}
-                ]
-            }
-        }
-        {
-            name: move_to_line_start
-            modifier: control
-            keycode: home
-            mode: [emacs, vi_normal, vi_insert]
-            event: {edit: movetolinestart}
-        }
-        {
-            name: move_to_line_end
-            modifier: control
-            keycode: end
-            mode: [emacs, vi_normal, vi_insert]
-            event: {edit: movetolineend}
-        }
-        {
             name: move_up
             modifier: control
             keycode: char_p
@@ -540,6 +413,20 @@ $env.config = {
                     {send: down}
                 ]
             }
+        }
+        {
+            name: move_one_word_left
+            modifier: alt
+            keycode: left
+            mode: [emacs, vi_normal, vi_insert]
+            event: {edit: movewordleft}
+        }
+        {
+            name: move_one_word_right
+            modifier: alt
+            keycode: right
+            mode: [emacs, vi_normal, vi_insert]
+            event: {edit: movewordright}
         }
         {
             name: delete_one_character_backward
@@ -570,203 +457,18 @@ $env.config = {
             event: {edit: delete}
         }
         {
-            name: delete_one_character_forward
-            modifier: control
-            keycode: char_h
-            mode: [emacs, vi_insert]
-            event: {edit: backspace}
-        }
-        {
-            name: delete_one_word_backward
-            modifier: control
-            keycode: char_w
-            mode: [emacs, vi_insert]
-            event: {edit: backspaceword}
-        }
-        {
-            name: move_left
-            modifier: none
-            keycode: backspace
-            mode: vi_normal
-            event: {edit: moveleft}
-        }
-        {
             name: newline_or_run_command
             modifier: none
             keycode: enter
             mode: emacs
             event: {send: enter}
         }
-        {
-            name: move_left
-            modifier: control
-            keycode: char_b
-            mode: emacs
-            event: {
-                until: [
-                    {send: menuleft}
-                    {send: left}
-                ]
-            }
-        }
-        {
-            name: move_right_or_take_history_hint
-            modifier: control
-            keycode: char_f
-            mode: emacs
-            event: {
-                until: [
-                    {send: historyhintcomplete}
-                    {send: menuright}
-                    {send: right}
-                ]
-            }
-        }
-        {
-            name: redo_change
-            modifier: control
-            keycode: char_g
-            mode: emacs
-            event: {edit: redo}
-        }
-        {
-            name: undo_change
-            modifier: control
-            keycode: char_z
-            mode: emacs
-            event: {edit: undo}
-        }
-        {
-            name: paste_before
-            modifier: control
-            keycode: char_y
-            mode: emacs
-            event: {edit: pastecutbufferbefore}
-        }
-        {
-            name: cut_word_left
-            modifier: control
-            keycode: char_w
-            mode: emacs
-            event: {edit: cutwordleft}
-        }
-        {
-            name: cut_line_to_end
-            modifier: control
-            keycode: char_k
-            mode: emacs
-            event: {edit: cuttoend}
-        }
-        {
-            name: cut_line_from_start
-            modifier: control
-            keycode: char_u
-            mode: emacs
-            event: {edit: cutfromstart}
-        }
-        {
-            name: swap_graphemes
-            modifier: control
-            keycode: char_t
-            mode: emacs
-            event: {edit: swapgraphemes}
-        }
-        {
-            name: move_one_word_left
-            modifier: alt
-            keycode: left
-            mode: emacs
-            event: {edit: movewordleft}
-        }
-        {
-            name: move_one_word_right_or_take_history_hint
-            modifier: alt
-            keycode: right
-            mode: emacs
-            event: {
-                until: [
-                    {send: historyhintwordcomplete}
-                    {edit: movewordright}
-                ]
-            }
-        }
-        {
-            name: move_one_word_left
-            modifier: alt
-            keycode: char_b
-            mode: emacs
-            event: {edit: movewordleft}
-        }
-        {
-            name: move_one_word_right_or_take_history_hint
-            modifier: alt
-            keycode: char_f
-            mode: emacs
-            event: {
-                until: [
-                    {send: historyhintwordcomplete}
-                    {edit: movewordright}
-                ]
-            }
-        }
-        {
-            name: delete_one_word_forward
-            modifier: alt
-            keycode: delete
-            mode: emacs
-            event: {edit: deleteword}
-        }
-        {
-            name: delete_one_word_backward
-            modifier: alt
-            keycode: backspace
-            mode: emacs
-            event: {edit: backspaceword}
-        }
-        {
-            name: delete_one_word_backward
-            modifier: alt
-            keycode: char_m
-            mode: emacs
-            event: {edit: backspaceword}
-        }
-        {
-            name: cut_word_to_right
-            modifier: alt
-            keycode: char_d
-            mode: emacs
-            event: {edit: cutwordright}
-        }
-        {
-            name: upper_case_word
-            modifier: alt
-            keycode: char_u
-            mode: emacs
-            event: {edit: uppercaseword}
-        }
-        {
-            name: lower_case_word
-            modifier: alt
-            keycode: char_l
-            mode: emacs
-            event: {edit: lowercaseword}
-        }
-        {
-            name: capitalize_char
-            modifier: alt
-            keycode: char_c
-            mode: emacs
-            event: {edit: capitalizechar}
-        }
     ]
 }
 
-alias core-cd = cd
 alias zed = /Applications/Zed.app/Contents/MacOS/cli
 
 source "~/Library/Application Support/nushell/scripts/mise.nu"
 source "~/Library/Application Support/nushell/scripts/zoxide.nu"
-
-alias cd = __zoxide_z
 
 use "~/Library/Application Support/nushell/scripts/starship.nu"
