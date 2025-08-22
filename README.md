@@ -44,8 +44,9 @@ There are a couple of "patterns" or "groups" my setup usually follows:
 
 ## Applying
 
-So future me, you have a new computer and want to set it up. First off, congrats. Second, run you'll need to install Homebrew, then run this command:
+Hello future me (and onlookers). If you want to apply to a new computer (first off, congrats on the new hardware) you'll need to:
 
-```sh
-chezmoi apply --source github.com/btkostner/dotfiles
-```
+1) Install homebrew
+2) Run `brew install chezmoi`
+3) Run `chezmoi apply --source github.com/btkostner/dotfiles`
+
