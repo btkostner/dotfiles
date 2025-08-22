@@ -1,29 +1,29 @@
 [user]
-	email = git@btkostner.io
-	name = Blake Kostner
-	signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE8t3C3+tYetBjoJ7YKF5qMw9ZkCRC+2KBb9/3Aai9x+
+    email = git@btkostner.io
+    name = Blake Kostner
+    signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE8t3C3+tYetBjoJ7YKF5qMw9ZkCRC+2KBb9/3Aai9x+
 
 [core]
     excludesFile = ~/.gitignore
 
 [init]
-	defaultBranch = main
+    defaultBranch = main
 
 [pull]
-	rebase = true
-	ff = only
+    rebase = true
+    ff = only
 
 [push]
-	autoSetupRemote = true
+    autoSetupRemote = true
 
 [gpg]
-	format = ssh
+    format = ssh
 
 [gpg "ssh"]
-	program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign
+    program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign
 
 [commit]
-	gpgsign = true
+    gpgsign = true
 
 [url "git@github.com:"]
     insteadOf = https://github.com/

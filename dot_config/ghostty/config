@@ -1,0 +1,9 @@
+theme = OneHalfDark
+cursor-style = bar
+cursor-style-blink = false
+window-padding-x = 10
+window-padding-y = 6
+confirm-close-surface = false
+quit-after-last-window-closed = true
+quit-after-last-window-closed-delay = 5m
+macos-titlebar-style = tabs

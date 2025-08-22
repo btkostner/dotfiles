@@ -1,0 +1,8 @@
+{{- $nerdFontsLatest := (gitHubLatestRelease "ryanoasis/nerd-fonts").TagName -}}
+{{- $fontPathDict := dict "linux" ".fonts" "darwin" "Library/Fonts" "windows" "AppData/Local/Microsoft/Windows/Fonts" -}}
+{{- $fontDir := osClean (get $fontPathDict .chezmoi.os) -}}
+
+["{{ $fontDir }}/FiraCode"]
+type = "archive"
+url = "https://github.com/ryanoasis/nerd-fonts/releases/download/{{ $nerdFontsLatest }}/FiraCode.zip"
+refreshPeriod = "168h"

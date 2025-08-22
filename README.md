@@ -18,9 +18,9 @@ There are a couple of "patterns" or "groups" my setup usually follows:
 
 - [1Password](https://1password.com/) as a password manager. I know it's not native, but it's the best password manager I've used. Syncs to everything. Multiple vaults to keep things organized. And it's got a CLI for when I'm in the terminal or scripting.
 
-- [Alacritty](https://github.com/alacritty/alacritty) for a terminal emulator. It's _extremely_ fast, has a good amount of options, and it's easy to configure.
+- [Dia](https://www.diabrowser.com/) as my browser. I don't use the AI features much, but it's the next _evolution_ of Arc browser which I loved. Having perminant tabs that don't take a ton of ram is awesome. And using the sidebar for tabs is chefs kiss.
 
-- [Arc](https://arc.net/) as my browser. It's easy to have multiple profiles for work and personal stuff. Having perminant tabs that don't take a ton of ram is awesome. And using the sidebar for tabs is chefs kiss.
+- [Ghostty](https://ghostty.org/) for a terminal emulator. It's _extremely_ fast and looks good with minimal configuration.
 
 - [Sketch](https://www.sketch.com/) for design work because it's native mac, has awesome export options, popular enough to have plugins and templates, and over all is just a great tool. Worth mentioning that I also use Inkscape because it's open source and dope.
 
@@ -32,7 +32,7 @@ There are a couple of "patterns" or "groups" my setup usually follows:
 
 - [UTM](https://getutm.app/) for virtual machines. Honestly, I don't use virtual machines that much, but when I do, UTM is the best option I've found.
 
-- [Zed](https://zed.dev/) for code editing. It's a native code editor that's _super_ fast. It doesn't support all of the languages I use yet, but it does most of what I need. For everything that Zed doesn't handle (or is too annoying for), I use VSCode.
+- [Zed](https://zed.dev/) for code editing. It's a native code editor that's _super_ fast and the AI features are pretty handy.
 
 3) I have some small utility apps that I use a ton. These include:
 

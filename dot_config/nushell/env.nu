@@ -2,6 +2,8 @@
 #
 # version = "0.89.0"
 
+use std/util "path add"
+
 def create_left_prompt [] {
     let home =  $nu.home-path
 
@@ -97,39 +99,20 @@ $env.NU_PLUGIN_DIRS = [
     ($nu.default-config-dir | path join 'plugins') # add <nushell-config-dir>/plugins
 ]
 
-# To add entries to PATH (on Windows you might use Path), you can use the following pattern:
-# $env.PATH = ($env.PATH | split row (char esep) | prepend '/some/path')
-
-$env.PATH = (
-        $env.PATH |
-        split row (char esep) |
-        prepend '/opt/homebrew/bin' |
-        prepend '/usr/local/bin' |
-        prepend '~/.local/share/mise/shims' |
-        prepend '~/.local/bin' |
-        prepend '~/.krew/bin'
-)
-
 # used for mise install erlang
 
-$env.CPPFLAGS = $"($env | get --ignore-errors CPPFLAGS | default "") -I/opt/homebrew/opt/unixodbc/include"
-$env.LDFLAGS = $"($env | get --ignore-errors LDFLAGS | default "") -L/opt/homebrew/opt/unixodbc/lib"
-$env.KERL_CONFIGURE_OPTIONS = $"--with-odbc=/opt/homebrew/opt/unixodbc --with-ssl=$(brew --prefix openssl) --disable-jit"
+$env.CPPFLAGS = $"($env | get --optional CPPFLAGS | default "") -I/opt/homebrew/opt/unixodbc/include"
+$env.LDFLAGS = $"($env | get --optional LDFLAGS | default "") -L/opt/homebrew/opt/unixodbc/lib"
+$env.KERL_CONFIGURE_OPTIONS = $"--with-odbc=/opt/homebrew/opt/unixodbc --with-ssl=$(/opt/homebrew/bin/brew --prefix openssl) --disable-jit"
 
 # Setup pnpm environment
 
-$env.PNPM_HOME = $"/Users/blake.kostner/Library/pnpm"
+$env.PNPM_HOME = $"($env.XDG_DATA_HOME)/pnpm"
 
-# Add to the environment
+# To add entries to PATH (on Windows you might use Path), you can use the following pattern:
+# $env.PATH = ($env.PATH | split row (char esep) | prepend '/some/path')
 
-$env.PATH = (
-        $env.PATH |
-        split row (char esep) |
-        prepend '/opt/homebrew/bin' |
-        prepend '/usr/local/bin' |
-        prepend '~/.local/share/mise/shims' |
-        prepend '~/.local/bin' |
-        prepend '~/.krew/bin' |
-        prepend '~/Library/pnpm'
-)
-
+path add "/opt/homebrew/bin"
+path add "/usr/local/bin"
+path add "~/.local/share/mise/shims"
+path add "~/.local/bin"

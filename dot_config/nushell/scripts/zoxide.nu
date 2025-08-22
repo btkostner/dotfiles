@@ -34,7 +34,7 @@ def --env __zoxide_z [...rest:string] {
 }
 
 # Jump to a directory using interactive search.
-def --env __zoxide_zi  [...rest:string] {
+def --env __zoxide_zi [...rest:string] {
   cd $'(zoxide query --interactive -- ...$rest | str trim -r -c "\n")'
 }
 
@@ -57,4 +57,4 @@ alias zi = __zoxide_zi
 #
 #   source ~/.zoxide.nu
 #
-# Note: zoxide only supports Nushell v0.73.0 and above.
+# Note: zoxide only supports Nushell v0.89.0+.

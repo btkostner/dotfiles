@@ -1,0 +1,11 @@
+packages:
+  darwin:
+    brews:
+      - "chezmoi"
+      - "curl"
+      - "gnupg"
+      - "mise"
+      - "nushell"
+      - "starship"
+    casks:
+      - "1password-cli"

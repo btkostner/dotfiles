@@ -4,6 +4,9 @@
 # Inserts a blank line between shell prompts
 add_newline = true
 
+# Elixir with mise can sometimes be slow for prompts in new folders
+command_timeout = 1000
+
 [character]
 success_symbol = "[>](bold green)"
 error_symbol = "[x](bold red)"

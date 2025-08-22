@@ -1,0 +1,6 @@
+{{- $nvimLatest := (gitHubLatestRelease "AstroNvim/AstroNvim").TagName -}}
+
+[".config/nvim"]
+type = "archive"
+url = "https://github.com/AstroNvim/AstroNvim/archive/refs/tags/{{ $nvimLatest }}.tar.gz"
+refreshPeriod = "168h"

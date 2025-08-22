@@ -6,15 +6,17 @@ asdf_compat = true
 experimental = true
 not_found_auto_install = false
 trusted_config_paths = [
-  "~/Projects/github.com/btkostner",
-  "~/Projects/github.com/stordco"
+    "~/Projects/github.com/btkostner",
+    "~/Projects/github.com/hiivemarkets",
 ]
 
 [tools]
 act = "latest"
+buf = "latest"
 elixir = "latest"
 erlang = "latest"
-zig = "latest"
-rust = "latest"
 go = "latest"
-buf = "latest"
+node = "latest"
+python = "latest"
+rust = "latest"
+zig = "latest"
