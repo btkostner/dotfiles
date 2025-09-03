@@ -29,3 +29,5 @@ jobs:
 
       - name: Apply
         run: chezmoi apply --source $(pwd) --force
+        env:
+          CHEZMOI_GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
