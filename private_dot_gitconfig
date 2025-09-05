@@ -27,3 +27,6 @@
 
 [url "git@github.com:"]
     insteadOf = https://github.com/
+
+[includeIf "gitdir:~/Projects/github.com/hiivemarkets/"]
+    path = ~/Projects/github.com/hiivemarkets/.gitconfig

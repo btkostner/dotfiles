@@ -112,6 +112,11 @@ $env.PNPM_HOME = $"($env.XDG_DATA_HOME)/pnpm"
 # To add entries to PATH (on Windows you might use Path), you can use the following pattern:
 # $env.PATH = ($env.PATH | split row (char esep) | prepend '/some/path')
 
+# These are system wide and included in `/etc/paths.d/`, but nushell does not
+# run this file, so we add them here.
+path add "/Applications/Postgres.app/Contents/Versions/latest/bin"
+
+# My own custom paths
 path add "/opt/homebrew/bin"
 path add "/usr/local/bin"
 path add "~/.local/share/mise/shims"

@@ -464,4 +464,5 @@ alias zed = /Applications/Zed.app/Contents/MacOS/cli
 
 source ./scripts/mise.nu
 source ./scripts/starship.nu
+source ./scripts/warp.nu
 source ./scripts/zoxide.nu
