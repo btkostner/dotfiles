@@ -119,5 +119,4 @@ path add "/Applications/Postgres.app/Contents/Versions/latest/bin"
 # My own custom paths
 path add "/opt/homebrew/bin"
 path add "/usr/local/bin"
-path add "~/.local/share/mise/shims"
 path add "~/.local/bin"

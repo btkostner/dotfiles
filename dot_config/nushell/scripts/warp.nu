@@ -28,7 +28,6 @@ def --env warp_hook [] {
         $env.REQUESTS_CA_BUNDLE = $CLOUDFLARE_CERT
         $env.SSL_CERT_FILE = $CLOUDFLARE_CERT
         $env.NODE_EXTRA_CA_CERTS = $CLOUDFLARE_CERT
-        $env.HEX_CACERTS_PATH = $CLOUDFLARE_CERT
         $env.GIT_SSL_CAINFO = $CLOUDFLARE_CERT
     } else {
         $env.WARP_CONNECTED = false
@@ -37,7 +36,6 @@ def --env warp_hook [] {
         do -i { hide-env REQUESTS_CA_BUNDLE }
         do -i { hide-env SSL_CERT_FILE }
         do -i { hide-env NODE_EXTRA_CA_CERTS }
-        do -i { hide-env HEX_CACERTS_PATH }
         do -i { hide-env GIT_SSL_CAINFO }
     }
 }

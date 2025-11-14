@@ -13,8 +13,10 @@ trusted_config_paths = [
 [tools]
 act = "latest"
 buf = "latest"
+deno = "latest"
 elixir = "latest"
 erlang = "latest"
+fnox = "latest"
 go = "latest"
 node = "latest"
 python = "latest"
