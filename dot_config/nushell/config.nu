@@ -462,6 +462,7 @@ $env.config = {
 
 alias zed = /Applications/Zed.app/Contents/MacOS/cli
 
+source ./scripts/fnox.nu
 source ./scripts/gh-npm.nu
 source ./scripts/mise.nu
 source ./scripts/starship.nu
