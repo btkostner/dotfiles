@@ -1,0 +1,16 @@
+[user]
+    email = blake.kostner@hiive.com
+    name = Blake Kostner
+    signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKDNnAtY5h9FBJqT6Q68qzU+JBSSYtfhIqrtotpbrQCb
+
+[gpg]
+    format = ssh
+
+[gpg "ssh"]
+    program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign
+
+[commit]
+    gpgsign = true
+
+[url "git@github.com:"]
+    insteadOf = https://github.com/

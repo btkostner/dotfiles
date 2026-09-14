@@ -1,0 +1,157 @@
+# Machine bootstrap for btkostner.
+#
+# Everything this repo does is declared here. Run it with:
+#
+#   mise trust && mise bootstrap
+#
+# Preview without touching anything:
+#
+#   mise bootstrap plan
+#   mise bootstrap --dry-run
+#
+# See https://mise.jdx.dev/bootstrap.html
+
+min_version = "2026.8.8"
+
+[settings.dotfiles]
+default_mode = "symlink"
+
+# ---------------------------------------------------------------------------
+# Packages
+#
+# Installed before dotfiles are applied, so `op` is on PATH by the time the
+# Zed template asks 1Password for a token.
+# ---------------------------------------------------------------------------
+
+[bootstrap.packages]
+"brew:curl" = { version = "latest", os = "macos" }
+"brew:gnupg" = { version = "latest", os = "macos" }
+"brew:mise" = { version = "latest", os = "macos" }
+"brew:nushell" = { version = "latest", os = "macos" }
+"brew:starship" = { version = "latest", os = "macos" }
+"brew:zoxide" = { version = "latest", os = "macos" }
+"brew-cask:1password-cli" = { version = "latest", os = "macos" }
+"brew-cask:font-fira-code-nerd-font" = { version = "latest", os = "macos" }
+
+# ---------------------------------------------------------------------------
+# Directories
+# ---------------------------------------------------------------------------
+
+[bootstrap.directories."~/.ssh"]
+state = "present"
+mode = "0700"
+
+# Both are listed in trusted_config_paths in the global mise config, and the
+# hiivemarkets one holds the work .gitconfig that ~/.gitconfig includes.
+[bootstrap.directories."~/Projects/github.com/btkostner"]
+state = "present"
+
+[bootstrap.directories."~/Projects/github.com/hiivemarkets"]
+state = "present"
+
+# ---------------------------------------------------------------------------
+# Files that should not exist
+#
+# Nushell is the shell here, so the bash/zsh leftovers get cleaned up.
+# ---------------------------------------------------------------------------
+
+[bootstrap.files."~/.bash_history"]
+state = "absent"
+
+[bootstrap.files."~/.bashrc"]
+state = "absent"
+
+[bootstrap.files."~/.tool-versions"]
+state = "absent"
+
+[bootstrap.files."~/.zcompdump"]
+state = "absent"
+
+[bootstrap.files."~/.zprofile"]
+state = "absent"
+
+[bootstrap.files."~/.zsh_history"]
+state = "absent"
+
+[bootstrap.files."~/.zshrc"]
+state = "absent"
+
+[bootstrap.directories."~/.zsh_sessions"]
+state = "absent"
+
+# ---------------------------------------------------------------------------
+# Repos
+# ---------------------------------------------------------------------------
+
+[bootstrap.repos."~/.config/nvim"]
+url = "https://github.com/AstroNvim/AstroNvim.git"
+
+# ---------------------------------------------------------------------------
+# macOS
+# ---------------------------------------------------------------------------
+
+# GUI apps do not read the shell environment, so the XDG base directories are
+# published to the launchd session at login. Installed as
+# `dev.mise.setXDG`; mise namespaces every agent label it writes.
+[bootstrap.macos.launchd.agents.setXDG]
+program = "/bin/sh"
+args = [
+  "-c",
+  '''
+  launchctl setenv XDG_CACHE_HOME "$HOME/.cache"
+  launchctl setenv XDG_CONFIG_HOME "$HOME/.config"
+  launchctl setenv XDG_DATA_HOME "$HOME/.local/share"
+  launchctl setenv XDG_STATE_HOME "$HOME/.local/state"
+  ''',
+]
+run_at_load = true
+keep_alive = false
+
+# ---------------------------------------------------------------------------
+# User
+# ---------------------------------------------------------------------------
+
+# Uncomment to have bootstrap run `chsh` for you. The path must already be
+# listed in /etc/shells or chsh fails and takes the bootstrap run down with it.
+# [bootstrap.user]
+# login_shell = "/opt/homebrew/bin/nu"
+
+# ---------------------------------------------------------------------------
+# Dotfiles
+#
+# Sources are relative to this file. Symlinked by default, so editing the live
+# file edits the file in this repo.
+# ---------------------------------------------------------------------------
+
+[dotfiles]
+"~/.editorconfig" = "dotfiles/editorconfig"
+"~/.gitconfig" = "dotfiles/gitconfig"
+"~/.ssh/config" = "dotfiles/ssh/config"
+"~/Projects/github.com/hiivemarkets/.gitconfig" = "dotfiles/projects/hiivemarkets/gitconfig"
+"~/.config/ghostty/config" = "dotfiles/config/ghostty/config"
+"~/.config/starship.toml" = "dotfiles/config/starship.toml"
+"~/.config/mise/config.toml" = "dotfiles/config/mise/config.toml"
+
+# Linked file by file: nushell writes history and plugin state into this
+# directory and that should not land in this repo.
+[dotfiles."~/.config/nushell"]
+source = "dotfiles/config/nushell"
+mode = "symlink-each"
+
+# Rendered rather than linked, because it pulls a token out of 1Password.
+# The token comes out empty when `op` is missing or locked instead of failing
+# the whole run.
+[dotfiles."~/.config/zed/settings.json"]
+source = "dotfiles/config/zed/settings.json.tmpl"
+mode = "template"
+
+# ---------------------------------------------------------------------------
+# Final task
+# ---------------------------------------------------------------------------
+
+# ~/.config/mise/config.toml is itself a dotfile, so on a fresh machine the
+# global toolchain it declares is only visible to mise after this run linked
+# it. A fresh `mise install` picks it up in the same pass.
+[tasks.bootstrap]
+description = "Install the global toolchain from ~/.config/mise/config.toml"
+run = "mise install"
