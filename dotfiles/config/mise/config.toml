@@ -16,6 +16,9 @@ trusted_config_paths = [
 # there. Checks are throttled by auto_update_check_duration, default 7d.
 auto_update = true
 
+[settings.history]
+sync = "manual"
+
 # The history watcher: a LaunchAgent on macOS, a systemd user service on
 # Linux, no root either way. It checkpoints tracked files into a local git
 # history so an edit can be diffed or rolled back.
@@ -59,6 +62,10 @@ exclude = [
   "**/cache/**",
   "**/Cache/**",
 ]
+
+[history.origin]
+url = "git@github.com:btkostner/dotfiles.git"
+branch = "main"
 
 # Languages and their package managers only. Everything else — the shell, the
 # prompt, the CLI tools — comes from Homebrew or apt via [bootstrap.packages].
