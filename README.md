@@ -15,7 +15,8 @@ See [Linux](#linux) for what still does not work there.
 | [`mise.toml`](mise.toml) | The whole declaration: packages, directories, removals, repos, the LaunchAgent, and the dotfile mapping |
 | [`dotfiles/`](dotfiles) | The actual config files, laid out to mirror where they land in `$HOME` |
 | [`hk.pkl`](hk.pkl) | Lint and format steps, and which git hooks run them |
-| [`scripts/`](scripts) | The two bootstrap hooks, as shell rather than TOML so they get linted |
+| [`scripts/`](scripts) | The four bootstrap hooks, as shell rather than TOML so they get linted |
+| [`fnox.toml`](fnox.toml) | Where each declared secret comes from — references only, no values |
 
 `dotfiles/` is not magic. There is no name mangling and no `dot_` prefix —
 every file is listed explicitly in the `[dotfiles]` table of `mise.toml`, and
@@ -104,6 +105,60 @@ under `[dotfiles]`:
 **Rendered files are copies, not links.** Editing the deployed file does not
 edit this repo — edit the `.tmpl` and re-apply, or use `mise dot edit`.
 
+## Secrets
+
+[`mise.toml`](mise.toml) declares *what* the templates need;
+[`fnox.toml`](fnox.toml) says *where* it comes from. Neither holds a value, so
+both are safe to commit:
+
+```toml
+# mise.toml
+[bootstrap.secrets]
+zed_github_token = { env = "ZED_GITHUB_TOKEN", allow_empty = true }
+
+# fnox.toml
+ZED_GITHUB_TOKEN = { provider = "onepassword", value = "op://...", default = "", if_missing = "warn" }
+```
+
+Run bootstrap through fnox so the values are in the environment:
+
+```bash
+fnox exec -- mise bootstrap
+```
+
+An interactive nushell already has them — `scripts/fnox.nu` activates fnox
+per-directory — so a plain `mise bootstrap` works there too.
+
+### Why the empty defaults
+
+`allow_empty` and fnox's `default = ""` are two halves of one bargain, and it
+is worth being precise about what each covers, because the failure modes are
+not the same:
+
+| State | Result |
+| --- | --- |
+| fnox resolves the secret | real value rendered |
+| fnox runs, 1Password unreachable or `op` missing | fnox warns, substitutes `""`, **bootstrap completes** |
+| bootstrap run without fnox at all | hard error, nothing rendered |
+
+The middle row is the point: a machine with no 1Password still gets a
+complete, valid `settings.json` — just without a token in it. mise refuses to
+leave a file half-rendered, so without `allow_empty` that row would be a
+failed run.
+
+The last row is a genuine gap on a brand-new machine, because fnox installs
+during the tools phase, which is *after* dotfiles. For that one first run:
+
+```bash
+ZED_GITHUB_TOKEN= mise bootstrap
+```
+
+`mise bootstrap --prompt-secrets` also works and will ask for the value.
+Every run after that picks fnox up automatically.
+
+`mise bootstrap secrets status` lists what is declared and whether it
+resolves, without printing any of it.
+
 Templates get `exec()` and `env`, but no `os` variable, so the branch comes
 from `uname`:
 
@@ -125,6 +180,20 @@ installed yet, and a later re-apply upgrades it to the real path. It also
 means the Homebrew prefix no longer has to be guessed: this already corrected
 `mise.nu`, which was pointing at `/opt/homebrew/bin/mise` on a machine where
 mise actually lives in `~/.local/bin`.
+
+**Tapped Homebrew casks are not declared here,** and the reason is worth
+recording. mise resolves cask metadata from formulae.brew.sh, which only knows
+homebrew-core, so a tapped cask falls back to evaluating the tap's
+`Casks/*.rb` — which needs Ruby 3, while macOS still ships 2.6:
+
+```text
+mise ERROR evaluating the tap definition for entire requires Ruby 3 or newer
+```
+
+That is not a warning. It fails `mise bootstrap plan` outright, so a single
+tapped cask takes the whole preview down. `entire` and `docker-desktop` are
+therefore installed but unmanaged. Declaring one would mean putting a Ruby 3
+on `PATH` purely so mise can read a `.rb` file.
 
 **mise is not in `[bootstrap.packages]`.** It installs itself from
 [mise.run](https://mise.run) and stays outside every package manager, which is the whole
@@ -230,6 +299,70 @@ nushell has none — Homebrew installs to `/opt/homebrew/bin`, apt to
 `/usr/local/bin/nu` pointed at whichever install is real, and the config names
 that. Terminals launch `nu` directly regardless; this is what fixes ssh
 sessions and anything that shells out to `$SHELL`.
+
+## History
+
+A watcher service checkpoints tracked files into a local git history, so an
+accidental edit can be diffed or rolled back. It is a LaunchAgent on macOS and
+a systemd user service on Linux, neither needing root:
+
+```toml
+# dotfiles/config/mise/config.toml
+[bootstrap.services.mise-history]
+builtin = "history-watch"
+```
+
+```bash
+mise dot status              # what is tracked, and whether the watcher runs
+mise dot paths               # the exact file list
+mise dot save -d "message"   # checkpoint now
+mise dot history             # list checkpoints
+mise dot history diff 11 12 --patch --path ~/.config/gh/config.yml
+mise dot rollback ~/.config/gh/config.yml --dry-run
+```
+
+### Why this lives in the global config
+
+Both the service and the tracked entries are declared in the *global* mise
+config rather than this repo's `mise.toml`, because mise rejects the latter:
+
+```text
+[dotfiles]."~/.trackme": tracking is enrolled from the global configuration
+only (ignored: project config), ignoring entry
+```
+
+Since `~/.config/mise/config.toml` is itself a dotfile this repo deploys, the
+declaration still lives in version control — it just has to arrive by that
+route. One consequence: on a first run the services phase happens *before* the
+global config exists, so `[tasks.bootstrap]` re-runs `mise bootstrap services
+apply` at the end.
+
+### What is tracked, and what cannot be
+
+An entry is either deployed or tracked, never both — so nothing this repo
+symlinks or renders appears here. That costs nothing: those files already live
+in this repo's git history. What gets tracked is the config *around* them.
+
+| Tracked | Why |
+| --- | --- |
+| `entire`, `git`, `jgit`, `mole`, `uv`, `opencode` | small, hand-edited, nothing else backs them up |
+| `gh` | `config.yml` only |
+
+Deliberately excluded, and worth keeping excluded:
+
+| Left out | Reason |
+| --- | --- |
+| `github-copilot` | `auth.db` is an OAuth token store |
+| `1Password`, `op` | credentials and session state |
+| `raycast`, `raycast-x` | ~450 MB of binary state, not config |
+| `gh/hosts.yml` | the GitHub auth token |
+| `opencode/node_modules` | 57 MB, 3,400 files |
+
+History commits are plaintext in a local git repo by default, which is why the
+credential paths are excluded rather than merely untidy. `mise dot paths`
+prints the resolved list — worth a look after adding anything, since it counts
+files per entry and makes an over-broad glob obvious. Adding more is one line
+per directory, or `mise dot add ~/.config/whatever`.
 
 ## Linux
 

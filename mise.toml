@@ -53,16 +53,30 @@ default_mode = "symlink"
 "brew-cask:1password-cli" = { version = "latest", os = "macos" }
 "apt:1password-cli" = { version = "latest", os = "linux" }
 
-"brew-cask:entireio/tap/entire" = { version = "latest", os = "macos" }
-
 # mise is deliberately absent from this list. It installs itself from
 # https://mise.run and stays out of any package manager, which is what keeps
 # `auto_update` in the global config working — Homebrew builds disable
 # self-update. See the README for moving an existing brew install across.
 
-# entire is not in homebrew-core, so its tap has to be declared.
-[bootstrap.brew.taps]
-"entireio/tap" = "https://github.com/entireio/homebrew-tap"
+# Tapped casks are deliberately not declared here. mise resolves cask metadata
+# from formulae.brew.sh, which only knows homebrew-core, and falls back to
+# evaluating the tap's Casks/*.rb — which needs Ruby 3, while macOS ships 2.6.
+# That failure takes down `mise bootstrap plan` entirely, so `entire` stays a
+# plain `brew install` like docker-desktop. See the README.
+
+# ---------------------------------------------------------------------------
+# Secrets
+#
+# Declares what the templates need, not what the values are. fnox.toml points
+# each one at 1Password and gives it an empty default, so a machine without
+# 1Password still renders and finishes — allow_empty is the half of that
+# bargain mise holds up.
+#
+#   fnox exec -- mise bootstrap
+# ---------------------------------------------------------------------------
+
+[bootstrap.secrets]
+zed_github_token = { env = "ZED_GITHUB_TOKEN", description = "GitHub PAT for Zed's MCP server", allow_empty = true }
 
 # ---------------------------------------------------------------------------
 # Hooks
@@ -282,6 +296,9 @@ mode = "template"
 description = "Install the global toolchain and wire up this repo's git hooks"
 run = [
   "mise install",
+  # The history watcher is declared in the global config, which this run only
+  # just linked — the services phase ran before that existed.
+  "mise bootstrap services apply --yes",
   # Config-based hooks on git 2.54+, so .git/hooks stays empty. Repo-local on
   # purpose: `hk install --global` would edit ~/.gitconfig, which this repo
   # tracks, and turn hk on for every repo on the machine.

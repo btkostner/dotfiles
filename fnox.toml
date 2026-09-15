@@ -1,0 +1,24 @@
+# Secret inputs for `mise bootstrap`. The matching declarations live in
+# [bootstrap.secrets] in mise.toml; this file says where the values come from.
+#
+# Nothing secret is stored here — only 1Password references — so it is safe to
+# commit.
+#
+# Every secret carries an empty default. A machine with no 1Password, or with
+# `op` not signed in, still renders its templates and finishes the bootstrap:
+# fnox warns, substitutes "", and moves on. mise's [bootstrap.secrets] pairs
+# that with allow_empty.
+#
+# Run bootstrap through fnox so the values are in the environment:
+#
+#   fnox exec -- mise bootstrap
+#
+# The nushell config activates fnox per-directory, so an interactive shell
+# already has them.
+
+[providers.onepassword]
+type = "1password"
+vault = "Private"
+
+[secrets]
+ZED_GITHUB_TOKEN = { provider = "onepassword", value = "op://Private/6f54nnankq5ff3ji4pghiopgci/credential", description = "GitHub PAT for Zed's MCP server", default = "", if_missing = "warn" }

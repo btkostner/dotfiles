@@ -49,7 +49,7 @@
     "mcp-server-github": {
       "source": "extension",
       "settings": {
-        "github_personal_access_token": "{{ exec(command="op item get 6f54nnankq5ff3ji4pghiopgci --fields credential --reveal 2>/dev/null || true") | trim }}"
+        "github_personal_access_token": "{{ secret(name="zed_github_token") }}"
       }
     }
   }
