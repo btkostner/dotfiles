@@ -1,3 +1,7 @@
+# Governs this repo. The copy shipped to ~/.editorconfig lives at
+# dotfiles/editorconfig and is deliberately separate.
+root = true
+
 [*]
 indent_style = space
 indent_size = 2
@@ -5,3 +9,13 @@ end_of_line = lf
 charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
+
+# Ordered-list continuations align under the text, which is 3 spaces for
+# "1. ". rumdl lints markdown; let it.
+[*.md]
+indent_size = unset
+
+# Verbatim upstream-shaped config. ssh(5) examples use tabs.
+[dotfiles/ssh/config]
+indent_style = tab
+indent_size = unset

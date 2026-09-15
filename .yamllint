@@ -1,0 +1,13 @@
+extends: default
+
+rules:
+  # GitHub Actions workflows do not start with a document marker, and `on:`
+  # is a key here, not the YAML boolean.
+  document-start: disable
+  truthy:
+    check-keys: false
+  line-length: disable
+  # pinact writes `uses: x@sha # v1.2.3` with a single space before the
+  # comment; that spacing is not ours to control.
+  comments:
+    min-spaces-from-content: 1

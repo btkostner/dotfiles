@@ -1,0 +1,94 @@
+amends "package://github.com/jdx/hk/releases/download/v2.0.0/hk@2.0.0#/Config.pkl"
+
+import "package://github.com/jdx/hk/releases/download/v2.0.0/hk@2.0.0#/Builtins.pkl"
+
+min_hk_version = "2.0.0"
+default_branch = "main"
+
+// Report everything at once rather than stopping at the first failing step.
+fail_fast = false
+
+// Everything here is a builtin. If a step has no matching files it is skipped,
+// so the generic hygiene checks cost nothing on a repo this small.
+local linters = new Mapping {
+  // --- file hygiene ---------------------------------------------------
+  ["trailing-whitespace"] = Builtins.trailing_whitespace
+  ["newlines"] = Builtins.newlines
+  ["mixed-line-ending"] = Builtins.mixed_line_ending
+  ["byte-order-marker"] = Builtins.byte_order_marker
+  ["check-case-conflict"] = Builtins.check_case_conflict
+  ["check-merge-conflict"] = Builtins.check_merge_conflict
+  ["check-added-large-files"] = Builtins.check_added_large_files
+  ["check-symlinks"] = Builtins.check_symlinks
+  ["destroyed-symlinks"] = Builtins.destroyed_symlinks
+  ["forbid-submodules"] = Builtins.forbid_submodules
+  ["check-executables-have-shebangs"] = Builtins.check_executables_have_shebangs
+  ["check-shebang-scripts-are-executable"] = Builtins.check_shebang_scripts_are_executable
+  // mise ships this one as `ec`, not `editorconfig-checker`.
+  ["editorconfig-checker"] = (Builtins.editorconfig_checker) {
+    check = "ec {{files}}"
+  }
+
+  // --- secrets --------------------------------------------------------
+  // This repo is one leaked token away from being a bad day.
+  ["detect-private-key"] = Builtins.detect_private_key
+  ["gitleaks"] = Builtins.gitleaks
+
+  // --- prose ----------------------------------------------------------
+  ["typos"] = Builtins.typos
+  // rumdl over markdownlint: one binary, no node toolchain to install.
+  ["rumdl"] = Builtins.rumdl
+  ["rumdl-format"] = Builtins.rumdl_format
+
+  // --- toml -----------------------------------------------------------
+  ["taplo"] = Builtins.taplo
+  ["mise"] = Builtins.mise
+  // `mise fmt` owns mise's own files; letting taplo format them too just
+  // makes the two fight over the same lines.
+  ["taplo-format"] = (Builtins.taplo_format) {
+    exclude = List("mise.toml", "dotfiles/config/mise/config.toml")
+  }
+
+  // --- yaml / github actions ------------------------------------------
+  ["yamlfmt"] = Builtins.yamlfmt
+  ["yamllint"] = Builtins.yamllint
+  ["actionlint"] = Builtins.actionlint
+  ["zizmor"] = Builtins.zizmor
+  // Keeps `uses:` pinned to commit SHAs, which is what zizmor's
+  // unpinned-uses audit wants.
+  ["pinact"] = Builtins.pinact
+
+  // --- pkl ------------------------------------------------------------
+  // This file lints itself.
+  ["pkl"] = Builtins.pkl
+  ["pkl-format"] = Builtins.pkl_format
+
+  // --- shell ----------------------------------------------------------
+  // Nothing matches today; here so the first script added is covered.
+  ["shellcheck"] = Builtins.shellcheck
+  ["shfmt"] = Builtins.shfmt
+}
+
+steps = linters
+
+hooks {
+  // Fast and fixing: formatters rewrite files and the fixes get staged.
+  ["pre-commit"] {
+    fix = true
+    stash = "git"
+    steps = linters
+  }
+
+  // Check-only, plus the network-bound link check.
+  ["pre-push"] {
+    steps = (linters) {
+      ["lychee"] = Builtins.lychee
+    }
+  }
+
+  ["commit-msg"] {
+    steps {
+      ["conventional-commit"] = Builtins.check_conventional_commit
+    }
+  }
+}

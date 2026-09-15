@@ -13,6 +13,7 @@ filter so it can grow a Linux path later.
 | --- | --- |
 | [`mise.toml`](mise.toml) | The whole declaration: packages, directories, removals, repos, the LaunchAgent, and the dotfile mapping |
 | [`dotfiles/`](dotfiles) | The actual config files, laid out to mirror where they land in `$HOME` |
+| [`hk.pkl`](hk.pkl) | Lint and format steps, and which git hooks run them |
 
 `dotfiles/` is not magic. There is no name mangling and no `dot_` prefix —
 every file is listed explicitly in the `[dotfiles]` table of `mise.toml`, and
@@ -81,7 +82,7 @@ without any of it landing in this repo.
 **Except Zed,** which is rendered from a template because it embeds a GitHub
 token from 1Password. The Tera expression shells out to `op`:
 
-```
+```text
 {{ exec(command="op item get <id> --fields credential --reveal 2>/dev/null || true") | trim }}
 ```
 
@@ -105,7 +106,7 @@ matters.
 On a machine that Chezmoi already set up, the real files in `$HOME` are in the
 way of the symlinks. mise refuses to clobber them:
 
-```
+```text
 mise ERROR files: refusing to overwrite existing files (use --force)
 ```
 
@@ -132,3 +133,53 @@ mise bootstrap repos status
 ```
 
 To add a dotfile, drop it in `dotfiles/` and add a line to `[dotfiles]`.
+
+## Linting
+
+[hk](https://hk.jdx.dev) runs the checks, and every step in
+[`hk.pkl`](hk.pkl) is one of its [builtins](https://hk.jdx.dev/builtins.html).
+
+```bash
+hk check --all     # everything, what CI runs
+hk fix --all       # everything, and rewrite what can be rewritten
+hk check           # just what changed
+hk check --plan    # which steps would run against which files
+```
+
+Hooks are installed by `mise run bootstrap`, or on their own with `hk install`.
+On git 2.54+ that writes `hook.hk-*.command` entries into `.git/config` and
+leaves `.git/hooks/` alone.
+
+| Hook | What it does |
+| --- | --- |
+| `pre-commit` | Runs the fixers, stages what they changed |
+| `pre-push` | Check-only, plus `lychee` on the links in this file |
+| `commit-msg` | `check_conventional_commit` |
+
+`HK=0 git commit` skips them.
+
+hk recommends `hk install --global` instead, which turns hooks on for every
+repo on the machine and no-ops wherever there is no `hk.pkl`. That writes to
+`~/.gitconfig` — a file this repo tracks — so the setting would end up in
+`dotfiles/gitconfig` and follow you to the next machine. Repo-local is the
+default here only because it keeps the blast radius to this repo.
+
+### Things worth knowing
+
+**Linters are `[tools]`, not `[bootstrap.packages]`.** They are dependencies of
+this repo, not of the machine, so they install into the repo's mise
+environment.
+
+**`editorconfig-checker` is pinned to 3.4.0 and invoked as `ec`.** The 4.x aqua
+package has no working darwin asset, and the binary has never been named after
+the project.
+
+**`mise fmt` and `taplo` both format TOML,** so `taplo-format` excludes
+mise's own files and lets `mise fmt` own them.
+
+**Three tool configs exist only to stop a builtin from being wrong:**
+[`.yamllint`](.yamllint) (workflows have no `---`, and `on:` is a key not a
+boolean), [`.rumdl.toml`](.rumdl.toml) (code fences may run long), and
+[`.yamlfmt`](.yamlfmt) (keep the blank lines). The repo's own
+[`.editorconfig`](.editorconfig) exempts markdown list indentation and the
+tab-indented ssh config.
