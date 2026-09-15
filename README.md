@@ -1,7 +1,7 @@
-# bootstrap
+# dotfiles
 
-My machine setup, declared in one file. This is the successor to my `dotfiles`
-repo, which was managed with Chezmoi; everything now runs through
+My machine setup, declared in one file. This repo used to be a Chezmoi source
+tree; everything now runs through
 [mise bootstrap](https://mise.jdx.dev/bootstrap.html).
 
 Built for macOS. Linux is a second-class but real target: packages carry `os`
@@ -20,7 +20,8 @@ See [Linux](#linux) for what still does not work there.
 
 `dotfiles/` is not magic. There is no name mangling and no `dot_` prefix —
 every file is listed explicitly in the `[dotfiles]` table of `mise.toml`, and
-the directory is just somewhere tidy to keep the sources.
+the directory is just somewhere tidy to keep the sources. It is a directory
+inside this repo, not the repo itself.
 
 ## Applying
 
@@ -38,7 +39,7 @@ hardware):
 3. Run it:
 
 ```bash
-mise bootstrap --from git@github.com:btkostner/bootstrap.git
+mise bootstrap --from git@github.com:btkostner/dotfiles.git
 ```
 
 That clones this repo to `$MISE_DATA_DIR/bootstrap-repo` and applies it. To

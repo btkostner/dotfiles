@@ -28,8 +28,8 @@ builtin = "history-watch"
 
 # Files the watcher checkpoints. These are plain config that nothing here
 # deploys — the templated and symlinked files cannot be listed, since an entry
-# is either deployed or tracked, and those already live in the bootstrap repo's
-# git history anyway.
+# is either deployed or tracked, and those already live in this repo's git
+# history anyway.
 #
 # Growing this is just another line. `mise dot add ~/.config/whatever` writes
 # it for you.
