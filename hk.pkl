@@ -24,9 +24,10 @@ local linters = new Mapping {
   ["forbid-submodules"] = Builtins.forbid_submodules
   ["check-executables-have-shebangs"] = Builtins.check_executables_have_shebangs
   ["check-shebang-scripts-are-executable"] = Builtins.check_shebang_scripts_are_executable
-  // mise ships this one as `ec`, not `editorconfig-checker`.
+  // The aqua package installs this as `ec` on macOS and as
+  // `editorconfig-checker` on Linux. Neither name works on both.
   ["editorconfig-checker"] = (Builtins.editorconfig_checker) {
-    check = "ec {{files}}"
+    check = "$(command -v ec || command -v editorconfig-checker) {{files}}"
   }
 
   // --- secrets --------------------------------------------------------

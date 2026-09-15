@@ -53,10 +53,16 @@ default_mode = "symlink"
 "brew-cask:1password-cli" = { version = "latest", os = "macos" }
 "apt:1password-cli" = { version = "latest", os = "linux" }
 
+"brew-cask:entireio/tap/entire" = { version = "latest", os = "macos" }
+
 # mise is deliberately absent from this list. It installs itself from
 # https://mise.run and stays out of any package manager, which is what keeps
 # `auto_update` in the global config working — Homebrew builds disable
 # self-update. See the README for moving an existing brew install across.
+
+# entire is not in homebrew-core, so its tap has to be declared.
+[bootstrap.brew.taps]
+"entireio/tap" = "https://github.com/entireio/homebrew-tap"
 
 # ---------------------------------------------------------------------------
 # Hooks
@@ -72,6 +78,17 @@ run = "sh scripts/linux-repos.sh"
 # dotfiles phase wants to write, which would otherwise stop the run dead.
 [bootstrap.hooks.pre-dotfiles]
 run = "sh scripts/clear-nushell-stubs.sh"
+
+# [bootstrap.user].login_shell below wants one absolute path that works on
+# every machine; nushell does not have one. This keeps /usr/local/bin/nu
+# pointing at whichever install is real.
+[bootstrap.hooks.pre-user]
+run = "sh scripts/register-shell.sh"
+
+# Dock and Finder read their preferences at launch, so a tile list or an
+# autohide change does nothing visible until they are restarted.
+[bootstrap.hooks.post-defaults]
+run = "killall Dock || true"
 
 # ---------------------------------------------------------------------------
 # Directories
@@ -148,10 +165,48 @@ keep_alive = false
 # User
 # ---------------------------------------------------------------------------
 
-# Uncomment to have bootstrap run `chsh` for you. The path must already be
-# listed in /etc/shells or chsh fails and takes the bootstrap run down with it.
-# [bootstrap.user]
-# login_shell = "/opt/homebrew/bin/nu"
+# mise appends this to /etc/shells before running chsh, so it does not have to
+# be registered first. The path is the symlink the pre-user hook maintains,
+# because Homebrew and apt install nushell to different places.
+[bootstrap.user]
+login_shell = "/usr/local/bin/nu"
+
+# ---------------------------------------------------------------------------
+# macOS preferences
+#
+# Read off this machine rather than invented: with the Dock tile list aside,
+# these are the settings that actually differ from Apple's defaults. Anything
+# absent is left at whatever the OS ships.
+# ---------------------------------------------------------------------------
+
+[bootstrap.macos.dock]
+autohide = true
+show_recents = false
+apps = [
+  "/Applications/Zen.app",
+  "/System/Applications/Messages.app",
+  "/System/Applications/Mail.app",
+  "/System/Applications/Calendar.app",
+  "/System/Applications/Reminders.app",
+  "/System/Applications/Notes.app",
+  "/System/Applications/Music.app",
+  "/Applications/Zed.app",
+  "/System/Applications/App Store.app",
+  "/System/Applications/Campo.app",
+  "/System/Applications/System Settings.app",
+]
+
+[bootstrap.macos.keyboard]
+automatic_capitalization = true
+automatic_spelling_correction = false
+
+[bootstrap.macos.trackpad]
+tap_to_click = false
+three_finger_drag = false
+
+# Dark mode has no curated section, so it goes in as a raw default.
+[bootstrap.macos.defaults.NSGlobalDomain]
+AppleInterfaceStyle = "Dark"
 
 # ---------------------------------------------------------------------------
 # Dotfiles

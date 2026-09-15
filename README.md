@@ -73,9 +73,12 @@ declarations above safe to write in any order:
    directory, and deletes the bash/zsh leftovers.
 3. **Repos** — clones AstroNvim into `~/.config/nvim`.
 4. **Dotfiles** — symlinks (and renders) everything in `dotfiles/`.
-5. **LaunchAgents** — installs the XDG agent.
-6. **Tools** — installs `[tools]` from every loaded mise config.
-7. **`[tasks.bootstrap]`** — a final `mise install`.
+5. **macOS defaults** — Dock, keyboard and trackpad preferences, then
+   `killall Dock` so they take effect.
+6. **LaunchAgents** — installs the XDG agent.
+7. **User** — `chsh` to nushell.
+8. **Tools** — installs `[tools]` from every loaded mise config.
+9. **`[tasks.bootstrap]`** — `mise install` and `hk install`.
 
 ## Notes on the pieces
 
@@ -191,6 +194,42 @@ Also worth doing once:
 - `brew uninstall chezmoi`
 - `launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/io.btkostner.setXDG.plist`
   and delete that plist — the mise-managed `dev.mise.setXDG` replaces it.
+
+## macOS preferences
+
+Read off this machine rather than invented. Apart from the Dock tile list,
+every value here is one that actually differs from Apple's default — the rest
+is left alone deliberately, so this file stays a record of decisions rather
+than a wall of settings.
+
+| Section | What it covers |
+| --- | --- |
+| `[bootstrap.macos.dock]` | autohide, no recents, and the eleven pinned tiles in order |
+| `[bootstrap.macos.keyboard]` | autocapitalise on, autocorrect off |
+| `[bootstrap.macos.trackpad]` | tap-to-click off, three-finger drag off |
+| `[bootstrap.macos.defaults]` | dark mode, which has no curated section |
+
+The curated sections compile down to `defaults write`; the raw
+`[bootstrap.macos.defaults]` table is the escape hatch for anything they do
+not cover. `mise bootstrap macos defaults apply --dry-run` prints the exact
+commands.
+
+Because the Dock tile list is managed, rearranging it by hand now counts as
+drift and gets reverted on the next apply. Drop `apps` if that becomes
+annoying — the rest of the section works without it.
+
+## Login shell
+
+`[bootstrap.user]` runs `chsh`, and mise appends the shell to `/etc/shells`
+first, so no separate registration is needed.
+
+What it does need is one absolute path that is right on every machine, and
+nushell has none — Homebrew installs to `/opt/homebrew/bin`, apt to
+`/usr/bin`, and `login_shell` neither templates nor filters by OS. So
+[`scripts/register-shell.sh`](scripts/register-shell.sh) keeps
+`/usr/local/bin/nu` pointed at whichever install is real, and the config names
+that. Terminals launch `nu` directly regardless; this is what fixes ssh
+sessions and anything that shells out to `$SHELL`.
 
 ## Linux
 
