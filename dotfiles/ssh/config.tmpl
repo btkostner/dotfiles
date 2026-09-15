@@ -1,0 +1,7 @@
+{%- set uname = exec(command="uname -s") | trim -%}
+Host *
+	IdentityAgent "{% if uname == "Darwin" %}~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock{% else %}~/.1password/agent.sock{% endif %}"
+
+Host github.com
+	Hostname ssh.github.com
+	Port 443

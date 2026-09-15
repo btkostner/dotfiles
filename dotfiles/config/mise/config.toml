@@ -6,10 +6,12 @@ asdf_compat = true
 experimental = true
 not_found_auto_install = false
 trusted_config_paths = [
-    "~/Projects/github.com/btkostner",
-    "~/Projects/github.com/hiivemarkets",
+  "~/Projects/github.com/btkostner",
+  "~/Projects/github.com/hiivemarkets",
 ]
 
+# Languages and their package managers only. Everything else — the shell, the
+# prompt, the CLI tools — comes from Homebrew or apt via [bootstrap.packages].
 [tools]
 fnox = "latest"
 node = "latest"

@@ -19,9 +19,21 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  # mise pulls most tools from GitHub releases. Unauthenticated runners share
+  # an IP pool and hit the 60/hour API limit.
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
-  macOS:
-    runs-on: macos-latest
+  lint:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout
@@ -35,19 +47,119 @@ jobs:
           install: true
           cache: true
 
+      - name: Validate (hk)
+        run: mise exec -- hk validate
+
+      - name: Lint
+        run: mise exec -- hk check --all
+
+  bootstrap:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Homebrew casks and a Nerd Font are slow and prove nothing `plan`
+          # has not already shown, and launchd needs a real login session.
+          - os: macos-latest
+            skip: packages,tools,task,macos-launchd-agents
+          # apt is quick, and the pre-packages hook that adds the nushell,
+          # GitHub CLI and 1Password repositories is the part most worth
+          # exercising for real.
+          - os: ubuntu-latest
+            skip: tools,task
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Install (mise)
+        uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
+        with:
+          install: false
+          cache: false
+
+      # Everything below runs against a throwaway HOME. Runners ship a real
+      # ~/.gitconfig and ~/.bashrc, and dotfiles refuse to clobber real files —
+      # so without this the dry run fails before it reaches anything
+      # interesting. mise is already on PATH, so moving HOME is safe.
+      - name: Scratch HOME
+        run: |
+          mkdir -p "${RUNNER_TEMP}/home"
+          echo "HOME=${RUNNER_TEMP}/home" >> "${GITHUB_ENV}"
+
       - name: Trust
         run: |
           mise trust
           mise trust dotfiles/config/mise/config.toml
 
-      - name: Lint
-        run: mise exec -- hk check --all
-
       - name: Plan
         run: mise bootstrap plan
 
-      # Everything except the parts that would install software onto the
-      # runner. `--dry-run` still runs `[tasks.bootstrap]`, hence `--skip
-      # task`.
+      # Packages and tools are skipped: installing Homebrew casks and a Nerd
+      # Font on a runner proves nothing that `plan` has not already shown.
+      # `--dry-run` runs `[tasks.bootstrap]` regardless, hence `--skip task`.
       - name: Dry run
-        run: mise bootstrap --dry-run --yes --skip packages,tools,task
+        run: mise bootstrap --dry-run --yes --skip ${{ matrix.skip }}
+
+      - name: Apply
+        run: mise bootstrap --yes --skip ${{ matrix.skip }}
+
+      - name: Verify
+        run: |
+          set -eux
+
+          # symlinked
+          test -L "${HOME}/.editorconfig"
+          test -L "${HOME}/.gitconfig"
+          test -L "${HOME}/.config/starship.toml"
+          test -L "${HOME}/.config/nushell/config.nu"
+          test -L "${HOME}/.config/nushell/scripts/warp.nu"
+
+          # rendered, so regular files rather than links
+          test -f "${HOME}/.ssh/config" && test ! -L "${HOME}/.ssh/config"
+          test -f "${HOME}/.config/nushell/env.nu"
+          test -f "${HOME}/.config/nushell/scripts/mise.nu"
+          test -f "${HOME}/.config/zed/settings.json"
+          test -f "${HOME}/Projects/github.com/hiivemarkets/.gitconfig"
+
+          # no template source should ever be deployed
+          test -z "$(find "${HOME}/.config/nushell" -name '*.tmpl' -print -quit)"
+
+          test -d "${HOME}/.config/nvim/.git"
+          test ! -e "${HOME}/.zshrc"
+
+          # the OS branches actually took
+          if [ "$(uname -s)" = "Darwin" ]; then
+            grep -q 'Group Containers' "${HOME}/.ssh/config"
+            grep -q '/Applications/1Password.app' "${HOME}/Projects/github.com/hiivemarkets/.gitconfig"
+            grep -q '/opt/homebrew/bin' "${HOME}/.config/nushell/env.nu"
+          else
+            grep -q '\.1password/agent.sock' "${HOME}/.ssh/config"
+            grep -q '/opt/1Password/op-ssh-sign' "${HOME}/Projects/github.com/hiivemarkets/.gitconfig"
+            if grep -q 'opt/homebrew' "${HOME}/.config/nushell/env.nu"; then
+              echo "env.nu still has Homebrew paths on Linux" >&2
+              exit 1
+            fi
+
+            # the pre-packages hook's repositories actually delivered
+            command -v nu
+            command -v gh
+            command -v op
+            command -v starship
+            command -v zoxide
+
+            # and the pre-dotfiles hook cleared nushell's stubs
+            if grep -q 'Installed by:' "${HOME}/.config/nushell/env.nu"; then
+              echo "env.nu is still nushell's stub" >&2
+              exit 1
+            fi
+          fi
+
+      # Second run must be a no-op. This is the property that makes the whole
+      # thing safe to re-run, so it is worth asserting rather than assuming.
+      - name: Re-apply is idempotent
+        run: mise bootstrap --yes --skip ${{ matrix.skip }}

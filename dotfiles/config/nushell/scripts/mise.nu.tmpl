@@ -1,3 +1,4 @@
+{%- set mise_bin = exec(command="command -v mise || echo mise") | trim -%}
 export-env {
   $env.MISE_ENV_CACHE = "1"
   $env.MISE_SHELL = "nu"
@@ -24,15 +25,15 @@ export def --env --wrapped main [command?: string, --help, ...rest: string] {
   let commands = ["deactivate", "shell", "sh"]
 
   if ($command == null) {
-    ^"/opt/homebrew/bin/mise"
+    ^"{{ mise_bin }}"
   } else if ($command == "activate") {
     $env.MISE_SHELL = "nu"
   } else if ($command in $commands) {
-    ^"/opt/homebrew/bin/mise" $command ...$rest
+    ^"{{ mise_bin }}" $command ...$rest
     | parse vars
     | update-env
   } else {
-    ^"/opt/homebrew/bin/mise" $command ...$rest
+    ^"{{ mise_bin }}" $command ...$rest
   }
 }
 
@@ -51,7 +52,7 @@ def --env "update-env" [] {
 }
 
 def --env mise_hook [] {
-  ^"/opt/homebrew/bin/mise" hook-env -s nu
+  ^"{{ mise_bin }}" hook-env -s nu
     | parse vars
     | update-env
 }

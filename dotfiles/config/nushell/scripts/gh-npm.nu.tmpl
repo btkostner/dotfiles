@@ -1,0 +1,6 @@
+{%- set gh_bin = exec(command="command -v gh || echo gh") | trim -%}
+export-env {
+    # Wrapped because this runs at every shell start: a missing or logged-out
+    # gh used to take the whole startup down with it.
+    $env.GH_NPM_TOKEN = (try { ^"{{ gh_bin }}" auth token | str trim } catch { "" })
+}

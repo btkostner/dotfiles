@@ -16,6 +16,6 @@ insert_final_newline = true
 indent_size = unset
 
 # Verbatim upstream-shaped config. ssh(5) examples use tabs.
-[dotfiles/ssh/config]
+[dotfiles/ssh/config.tmpl]
 indent_style = tab
 indent_size = unset

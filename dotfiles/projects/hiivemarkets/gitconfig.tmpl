@@ -1,3 +1,4 @@
+{%- set uname = exec(command="uname -s") | trim -%}
 [user]
     email = blake.kostner@hiive.com
     name = Blake Kostner
@@ -7,7 +8,7 @@
     format = ssh
 
 [gpg "ssh"]
-    program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign
+    program = {% if uname == "Darwin" %}/Applications/1Password.app/Contents/MacOS/op-ssh-sign{% else %}/opt/1Password/op-ssh-sign{% endif %}
 
 [commit]
     gpgsign = true

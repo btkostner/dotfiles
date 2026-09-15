@@ -4,8 +4,9 @@ My machine setup, declared in one file. This is the successor to my `dotfiles`
 repo, which was managed with Chezmoi; everything now runs through
 [mise bootstrap](https://mise.jdx.dev/bootstrap.html).
 
-Built for macOS, but the pieces that are not macOS-specific carry an `os`
-filter so it can grow a Linux path later.
+Built for macOS. Linux is a second-class but real target: packages carry `os`
+filters and pick up apt equivalents, and CI runs the whole thing on both.
+See [Linux](#linux) for what still does not work there.
 
 ## Layout
 
@@ -14,6 +15,7 @@ filter so it can grow a Linux path later.
 | [`mise.toml`](mise.toml) | The whole declaration: packages, directories, removals, repos, the LaunchAgent, and the dotfile mapping |
 | [`dotfiles/`](dotfiles) | The actual config files, laid out to mirror where they land in `$HOME` |
 | [`hk.pkl`](hk.pkl) | Lint and format steps, and which git hooks run them |
+| [`scripts/`](scripts) | The two bootstrap hooks, as shell rather than TOML so they get linted |
 
 `dotfiles/` is not magic. There is no name mangling and no `dot_` prefix —
 every file is listed explicitly in the `[dotfiles]` table of `mise.toml`, and
@@ -72,23 +74,49 @@ declarations above safe to write in any order:
 
 ## Notes on the pieces
 
-**Dotfiles are symlinks.** Editing `~/.config/starship.toml` edits the file in
-this repo. `git diff` is the source of truth for what has drifted.
+**Most dotfiles are symlinks.** Editing `~/.config/starship.toml` edits the
+file in this repo, and `git diff` is the source of truth for what has drifted.
 
-**Except nushell,** which is `symlink-each`: each file is linked individually
-so nushell can keep writing history and plugin state into `~/.config/nushell`
-without any of it landing in this repo.
+**Nushell is `symlink-each`,** so each file is linked individually and nushell
+can keep writing history and plugin state into `~/.config/nushell` without any
+of it landing here.
 
-**Except Zed,** which is rendered from a template because it embeds a GitHub
-token from 1Password. The Tera expression shells out to `op`:
+**Some files are rendered instead,** because they either branch on the OS or
+bake in an absolute path. Those are the `.tmpl` sources, listed one by one
+under `[dotfiles]`:
+
+| Rendered | Why |
+| --- | --- |
+| `ssh/config` | 1Password's agent socket is somewhere else on Linux |
+| `projects/hiivemarkets/gitconfig` | so is `op-ssh-sign` |
+| `config/nushell/env.nu` | Homebrew paths, the Zed and Postgres.app aliases, and the Erlang build flags are all macOS-only |
+| `config/nushell/scripts/{mise,starship,gh-npm}.nu` | each calls a binary by absolute path |
+| `config/zed/settings.json` | pulls a token out of 1Password |
+
+**Rendered files are copies, not links.** Editing the deployed file does not
+edit this repo — edit the `.tmpl` and re-apply, or use `mise dot edit`.
+
+Templates get `exec()` and `env`, but no `os` variable, so the branch comes
+from `uname`:
 
 ```text
-{{ exec(command="op item get <id> --fields credential --reveal 2>/dev/null || true") | trim }}
+{%- set uname = exec(command="uname -s") | trim -%}
+{% if uname == "Darwin" %}...{% else %}...{% endif %}
 ```
 
-The `|| true` matters. When `op` is missing or the vault is locked the token
-renders empty instead of failing the whole bootstrap run, which is the one
-thing the Chezmoi version could not do.
+Binaries resolve the same way, once, at apply time:
+
+```text
+{%- set mise_bin = exec(command="command -v mise || echo mise") | trim -%}
+```
+
+The absolute path is baked into the rendered file, so the prompt never pays
+for a `PATH` lookup — which is the reason these paths were hardcoded in the
+first place. The `|| echo` fallback covers the case where the binary is not
+installed yet, and a later re-apply upgrades it to the real path. It also
+means the Homebrew prefix no longer has to be guessed: this already corrected
+`mise.nu`, which was pointing at `/opt/homebrew/bin/mise` on a machine where
+mise actually lives in `~/.local/bin`.
 
 **The LaunchAgent gets renamed.** mise namespaces every agent it writes, so
 what was `io.btkostner.setXDG` is now `dev.mise.setXDG`.
@@ -123,6 +151,57 @@ Also worth doing once:
 - `launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/io.btkostner.setXDG.plist`
   and delete that plist — the mise-managed `dev.mise.setXDG` replaces it.
 
+## Linux
+
+`mise bootstrap` applies cleanly on Ubuntu — files, directories, repos and
+dotfiles all land, and the LaunchAgent is skipped with a note. CI asserts
+that on every push.
+
+Ubuntu's own repositories cover `curl`, `gnupg`, `zoxide` and
+`fonts-firacode` — the last standing in for the Nerd Font, which nobody
+packages, and costing nothing because the starship config uses text symbols
+rather than glyphs.
+
+Everything else needs a repository added first, which is what
+[`scripts/linux-repos.sh`](scripts/linux-repos.sh) does from
+`[bootstrap.hooks.pre-packages]`:
+
+| Package | Repository |
+| --- | --- |
+| `nushell` | `apt.fury.io/nushell` |
+| `gh` | `cli.github.com` — universe has 2.45, this has 2.100 |
+| `1password-cli` | `downloads.1password.com`, plus the debsig policy dpkg demands |
+
+The script installs its own `curl` and `gnupg` first, since those are declared
+in `[bootstrap.packages]` and so do not exist yet on the first run, and it
+needs sudo. Re-running adds nothing: a repository with both its keyring and
+its list file present is skipped.
+
+Starship is the one thing not installed from a package. It reached apt in
+Debian 13 but Ubuntu does not carry it, and a missing apt package is a hard
+error in `[bootstrap.packages]` — so the same script installs it from
+`starship.rs`, preferring apt where apt has it.
+
+The macOS-specific dotfiles are templates now, so a Linux box gets the
+1Password socket at `~/.1password/agent.sock`, `op-ssh-sign` out of
+`/opt/1Password`, and an `env.nu` with no Homebrew, Zed.app or Postgres.app in
+it. CI greps for exactly that on both runners.
+
+One asymmetry worth knowing: the XDG base directories come from the setXDG
+LaunchAgent on macOS, and nothing plays that role on Linux — so `env.nu` fills
+in the spec defaults when they are unset. On macOS the LaunchAgent still wins.
+
+Installing nushell has a side effect worth knowing about: its postinst seeds
+stub `config.nu` and `env.nu` files in `~/.config/nushell`, exactly where the
+dotfiles phase wants to write, and the run stops dead on them.
+[`scripts/clear-nushell-stubs.sh`](scripts/clear-nushell-stubs.sh) clears them
+from `[bootstrap.hooks.pre-dotfiles]`. It matches on the `# Installed by:`
+header nushell generates, so it will never delete a file this repo put there.
+
+One ordering note: starship installs during the packages phase, which is
+before dotfiles, so `starship.nu` gets the real `/usr/local/bin/starship`
+baked in on the very first run.
+
 ## Day to day
 
 ```bash
@@ -140,7 +219,7 @@ To add a dotfile, drop it in `dotfiles/` and add a line to `[dotfiles]`.
 [`hk.pkl`](hk.pkl) is one of its [builtins](https://hk.jdx.dev/builtins.html).
 
 ```bash
-hk check --all     # everything, what CI runs
+hk check --all     # everything, what CI runs on both OSes
 hk fix --all       # everything, and rewrite what can be rewritten
 hk check           # just what changed
 hk check --plan    # which steps would run against which files
@@ -166,13 +245,21 @@ default here only because it keeps the blast radius to this repo.
 
 ### Things worth knowing
 
-**Linters are `[tools]`, not `[bootstrap.packages]`.** They are dependencies of
-this repo, not of the machine, so they install into the repo's mise
-environment.
+**mise manages languages, not machine software.** The global config carries
+only `fnox`, `node` and `npm`; the shell, the prompt and the CLI tools all
+come from Homebrew or apt through `[bootstrap.packages]`. The `[tools]` in
+this repo's own `mise.toml` are a separate thing — hk's linters, dependencies
+of this repo rather than of the machine, and not packaged for apt anyway.
 
 **`editorconfig-checker` is pinned to 3.4.0 and invoked as `ec`.** The 4.x aqua
 package has no working darwin asset, and the binary has never been named after
 the project.
+
+**`pinact` calls the GitHub API** to map a SHA back to its version comment,
+and unauthenticated that is 60 requests an hour. It only matches files under
+`.github/workflows/`, so it stays quiet until one of them changes — but export
+`GITHUB_TOKEN` (`export GITHUB_TOKEN=$(gh auth token)`) before `hk check --all`
+if you hit the limit. CI passes one in already.
 
 **`mise fmt` and `taplo` both format TOML,** so `taplo-format` excludes
 mise's own files and lets `mise fmt` own them.
