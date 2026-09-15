@@ -28,7 +28,12 @@ hardware):
 
 1. Install [Homebrew](https://brew.sh/), which the `brew:` and `brew-cask:`
    packages need.
-2. Install mise: `curl https://mise.run | sh`
+2. Install mise — from [mise.run](https://mise.run), **not** from Homebrew:
+
+   ```bash
+   curl https://mise.run | sh
+   ```
+
 3. Run it:
 
 ```bash
@@ -118,6 +123,13 @@ means the Homebrew prefix no longer has to be guessed: this already corrected
 `mise.nu`, which was pointing at `/opt/homebrew/bin/mise` on a machine where
 mise actually lives in `~/.local/bin`.
 
+**mise is not in `[bootstrap.packages]`.** It installs itself from
+[mise.run](https://mise.run) and stays outside every package manager, which is the whole
+point: Homebrew's build has self-update compiled out, so a brew-installed mise
+answers `mise self-update` with *"self-update is disabled for this install"*.
+Keeping it unmanaged is what lets `auto_update = true` in the global config do
+anything. The check is throttled by `auto_update_check_duration`, default 7d.
+
 **The LaunchAgent gets renamed.** mise namespaces every agent it writes, so
 what was `io.btkostner.setXDG` is now `dev.mise.setXDG`.
 
@@ -144,6 +156,35 @@ Check what the run wants to do, then let it:
 mise bootstrap --dry-run
 mise bootstrap --force-dotfiles
 ```
+
+### Moving mise off Homebrew
+
+Worth checking before anything else, because a brew-installed mise cannot
+update itself:
+
+```bash
+brew list mise
+```
+
+If it is there, `~/.local/bin/mise` is most likely a symlink pointing into the
+Cellar rather than a real binary. Replace both:
+
+```bash
+rm -f ~/.local/bin/mise
+brew uninstall mise
+curl https://mise.run | sh
+mise --version
+```
+
+`mise bootstrap packages prune` will also flag the brew install now that it is
+no longer declared.
+
+Do this first, not last. `mise.toml` sets `min_version = "2026.9.8"`, which is
+the release that understands `auto_update` — so an older mise refuses to run
+anything in this repo and says so. That is deliberate: on 2026.8.8 the setting
+is an unknown field, and mise warns about it on every single prompt.
+
+### Other one-time cleanup
 
 Also worth doing once:
 

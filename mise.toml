@@ -11,7 +11,7 @@
 #
 # See https://mise.jdx.dev/bootstrap.html
 
-min_version = "2026.8.8"
+min_version = "2026.9.8"
 
 [settings.dotfiles]
 default_mode = "symlink"
@@ -53,9 +53,10 @@ default_mode = "symlink"
 "brew-cask:1password-cli" = { version = "latest", os = "macos" }
 "apt:1password-cli" = { version = "latest", os = "linux" }
 
-# The nushell scripts call /opt/homebrew/bin/mise by path on macOS. On Linux
-# mise installs itself, so there is nothing to declare.
-"brew:mise" = { version = "latest", os = "macos" }
+# mise is deliberately absent from this list. It installs itself from
+# https://mise.run and stays out of any package manager, which is what keeps
+# `auto_update` in the global config working — Homebrew builds disable
+# self-update. See the README for moving an existing brew install across.
 
 # ---------------------------------------------------------------------------
 # Hooks

@@ -10,6 +10,12 @@ trusted_config_paths = [
   "~/Projects/github.com/hiivemarkets",
 ]
 
+# mise installs itself from https://mise.run and stays out of every package
+# manager, so it is free to keep itself current. Homebrew builds have
+# self-update compiled out, which is why this repo no longer installs it from
+# there. Checks are throttled by auto_update_check_duration, default 7d.
+auto_update = true
+
 # Languages and their package managers only. Everything else — the shell, the
 # prompt, the CLI tools — comes from Homebrew or apt via [bootstrap.packages].
 [tools]
