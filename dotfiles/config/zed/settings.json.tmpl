@@ -14,6 +14,22 @@
       "model": "gpt-5"
     }
   },
+  // omp is the harness. Zed talks to it over ACP, so the model, the
+  // subscriptions and the tools are all omp's — the "agent" block above only
+  // configures Zed's own agent and the inline assistant.
+  //
+  // The command is the symlink scripts/install-omp.sh maintains. A GUI app
+  // gets its PATH from launchd, not from the login shell, so naming the
+  // binary rather than an absolute path would leave this working from the
+  // terminal and broken from the Dock.
+  "agent_servers": {
+    "omp": {
+      "type": "custom",
+      "command": "/usr/local/bin/omp",
+      "args": ["acp"],
+      "env": {}
+    }
+  },
   "features": {
     "edit_prediction_provider": "copilot"
   },

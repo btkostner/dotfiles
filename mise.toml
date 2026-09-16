@@ -88,10 +88,13 @@ zed_github_token = { env = "ZED_GITHUB_TOKEN", description = "GitHub PAT for Zed
 [bootstrap.hooks.pre-packages]
 run = "sh scripts/linux-repos.sh"
 
-# Installing nushell makes it seed stub config.nu/env.nu files right where the
-# dotfiles phase wants to write, which would otherwise stop the run dead.
+# Two things that both have to happen before anything is written into
+# ~/.config. Installing nushell seeds stub config.nu/env.nu files right where
+# the dotfiles phase wants to write, which would otherwise stop the run dead.
+# And omp is the binary the Zed settings name by absolute path, so it goes in
+# ahead of them rather than a phase later.
 [bootstrap.hooks.pre-dotfiles]
-run = "sh scripts/clear-nushell-stubs.sh"
+run = ["sh scripts/clear-nushell-stubs.sh", "sh scripts/install-omp.sh"]
 
 # [bootstrap.user].login_shell below wants one absolute path that works on
 # every machine; nushell does not have one. This keeps /usr/local/bin/nu
@@ -236,6 +239,10 @@ AppleInterfaceStyle = "Dark"
 "~/.config/starship.toml" = "dotfiles/config/starship.toml"
 "~/.config/mise/config.toml" = "dotfiles/config/mise/config.toml"
 
+# Zed has no setting that picks a default agent, so this rebinds the agent
+# panel's new-thread key to omp. See the README.
+"~/.config/zed/keymap.json" = "dotfiles/config/zed/keymap.json"
+
 # Linked file by file: nushell writes history and plugin state into this
 # directory and that should not land in this repo. Templates are excluded here
 # and deployed individually below.
@@ -304,6 +311,14 @@ run = [
   # tracks, and turn hk on for every repo on the machine.
   "hk install",
 ]
+
+# The two subscription logins omp routes through. Both open a browser and are
+# answered by hand, which is why they are a task rather than part of the
+# bootstrap run. Equivalent to `/login anthropic` and `/login openai-codex`
+# inside a session; `omp usage` lists what is signed in.
+[tasks.omp-login]
+description = "Sign omp in to the Claude and Codex subscriptions"
+run = ["omp auth-broker login anthropic", "omp auth-broker login openai-codex"]
 
 # Linters for this repo, run by hk. `uv` is not used directly: yamllint is a
 # pypi package, and without uv (or pipx) mise cannot install it on a machine

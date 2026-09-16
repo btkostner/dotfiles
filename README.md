@@ -15,7 +15,7 @@ See [Linux](#linux) for what still does not work there.
 | [`mise.toml`](mise.toml) | The whole declaration: packages, directories, removals, repos, the LaunchAgent, and the dotfile mapping |
 | [`dotfiles/`](dotfiles) | The actual config files, laid out to mirror where they land in `$HOME` |
 | [`hk.pkl`](hk.pkl) | Lint and format steps, and which git hooks run them |
-| [`scripts/`](scripts) | The four bootstrap hooks, as shell rather than TOML so they get linted |
+| [`scripts/`](scripts) | The bootstrap hooks, as shell rather than TOML so they get linted |
 | [`fnox.toml`](fnox.toml) | Where each declared secret comes from — references only, no values |
 
 `dotfiles/` is not magic. There is no name mangling and no `dot_` prefix —
@@ -74,7 +74,8 @@ declarations above safe to write in any order:
 2. **Files and directories** — creates `~/.ssh` (0700) and the work projects
    directory, and deletes the bash/zsh leftovers.
 3. **Repos** — clones AstroNvim into `~/.config/nvim`.
-4. **Dotfiles** — symlinks (and renders) everything in `dotfiles/`.
+4. **Dotfiles** — clears nushell's stub configs and installs omp, then
+   symlinks (and renders) everything in `dotfiles/`.
 5. **macOS defaults** — Dock, keyboard and trackpad preferences, then
    `killall Dock` so they take effect.
 6. **LaunchAgents** — installs the XDG agent.
@@ -301,6 +302,70 @@ nushell has none — Homebrew installs to `/opt/homebrew/bin`, apt to
 that. Terminals launch `nu` directly regardless; this is what fixes ssh
 sessions and anything that shells out to `$SHELL`.
 
+## AI harness
+
+[omp](https://omp.sh) (oh-my-pi) is the coding agent everything here drives AI
+work through, in the terminal and in the editor both. It is installed from
+upstream's script rather than from a package manager, because it updates
+itself — the same argument that keeps mise off Homebrew:
+
+```bash
+curl -fsSL https://omp.sh/install | sh -s -- --binary
+```
+
+[`scripts/install-omp.sh`](scripts/install-omp.sh) runs that from
+`[bootstrap.hooks.pre-dotfiles]`, ahead of the Zed settings that name the
+binary. `--binary` rather than the default, which builds from source through
+bun when bun happens to be on PATH: nothing here installs bun, and pinning the
+mode keeps the binary in one known place.
+
+The binary lands in `~/.local/bin`, which is on PATH and writable, so
+`omp update` can replace it without sudo. `/usr/local/bin/omp` is symlinked at
+it — the same arrangement as `/usr/local/bin/nu`, and for the same reason. One
+absolute path that is right on every machine, and one that an app launched
+from the Dock can actually find, since launchd hands it a PATH with neither
+`~/.local/bin` nor `/opt/homebrew/bin` in it. The symlink is the only part
+that needs sudo.
+
+### Zed
+
+Zed drives omp over [ACP](https://agentclientprotocol.com), so the models, the
+subscriptions, the tools and the rules are all omp's. The `agent` block in
+`settings.json` is not dead config, but it only covers Zed's own agent and the
+inline assistant:
+
+```json
+"agent_servers": {
+  "omp": {
+    "type": "custom",
+    "command": "/usr/local/bin/omp",
+    "args": ["acp"],
+    "env": {}
+  }
+}
+```
+
+Zed has no setting that picks a default agent — the panel reopens whichever
+one was used last, and falls back to its own on a fresh project. So
+[`dotfiles/config/zed/keymap.json`](dotfiles/config/zed/keymap.json) binds the
+agent panel's new-thread key to omp instead. `cmd-alt-shift-n` still opens the
+menu with every other agent in it.
+
+### Subscriptions
+
+omp keeps its own credential store at `~/.omp/agent/agent.db`, and does not
+read Claude Code's or Codex's. Both logins are OAuth flows answered in a
+browser, which is why they are a task rather than part of the bootstrap run:
+
+```bash
+mise run omp-login   # anthropic, then openai-codex
+omp usage            # which accounts are signed in, and what is left of them
+```
+
+`/login anthropic` and `/login openai-codex` inside a session do the same
+thing. The first omp thread in Zed offers *Use existing local credentials*,
+which is this store — there is no second login to do there.
+
 ## History
 
 A watcher service checkpoints tracked files into a local git history, so an
@@ -346,8 +411,13 @@ in this repo's git history. What gets tracked is the config *around* them.
 
 | Tracked | Why |
 | --- | --- |
-| `entire`, `git`, `jgit`, `mole`, `uv`, `opencode` | small, hand-edited, nothing else backs them up |
-| `gh` | `config.yml` only |
+| `gh/config.yml` | small, hand-edited, nothing else backs it up |
+| `git/ignore` | same |
+| `.omp/agent/config.yml` | the harness settings, tuned by hand through omp itself |
+
+Each names a file rather than the directory around it, which is what
+`388f4d1` tightened: a directory entry sweeps up whatever lands beside it
+later, and the sibling is usually the credential store.
 
 Deliberately excluded, and worth keeping excluded:
 
@@ -356,14 +426,16 @@ Deliberately excluded, and worth keeping excluded:
 | `github-copilot` | `auth.db` is an OAuth token store |
 | `1Password`, `op` | credentials and session state |
 | `raycast`, `raycast-x` | ~450 MB of binary state, not config |
-| `gh/hosts.yml` | the GitHub auth token |
-| `opencode/node_modules` | 57 MB, 3,400 files |
+| `gh/hosts.yml` | the GitHub auth token — out of reach now that only `config.yml` is named |
+| `**/node_modules/**` | `opencode`'s alone was 57 MB, 3,400 files |
+| `.omp/agent/agent.db` | the OAuth store both subscriptions log in to |
+| `.omp/agent/{models,history}.db`, `sessions` | megabytes of churn, rewritten every session |
 
-History commits are plaintext in a local git repo by default, which is why the
-credential paths are excluded rather than merely untidy. `mise dot paths`
-prints the resolved list — worth a look after adding anything, since it counts
-files per entry and makes an over-broad glob obvious. Adding more is one line
-per directory, or `mise dot add ~/.config/whatever`.
+History commits are plaintext, which is why the credential paths are excluded
+rather than merely untidy, and why the origin is a private repo. `mise dot
+paths` prints the resolved list — worth a look after adding anything, since it
+counts files per entry and makes an over-broad glob obvious. Adding more is
+one line each, or `mise dot track ~/.config/whatever`.
 
 ## Linux
 

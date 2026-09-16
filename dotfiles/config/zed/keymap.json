@@ -1,0 +1,24 @@
+// Zed keymap
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/key-bindings
+//
+// The only thing here is making omp the agent you get by default. Zed has no
+// setting for that — the agent panel opens whichever agent you used last, and
+// falls back to its own on a fresh project — so the new-thread key is bound
+// to omp instead. The new-thread menu (cmd-alt-shift-n) still offers every
+// other agent.
+[
+  {
+    "context": "AgentPanel",
+    "bindings": {
+      "cmd-n": ["agent::NewExternalAgentThread", { "agent": "omp" }]
+    }
+  },
+  {
+    "context": "AcpThread",
+    "bindings": {
+      "cmd-n": ["agent::NewExternalAgentThread", { "agent": "omp" }]
+    }
+  }
+]

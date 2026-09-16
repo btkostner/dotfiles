@@ -41,9 +41,17 @@ builtin = "history-watch"
 #   github-copilot  auth.db is an OAuth token store
 #   1Password, op   credentials and session state
 #   raycast(-x)     ~450 MB of binary state, not config
+#   .omp/agent      agent.db is the OAuth store omp logs in to; models.db,
+#                   history.db and sessions/ are megabytes of churn
 [dotfiles]
 "~/.config/gh/config.yml" = { mode = "track" }
 "~/.config/git/ignore" = { mode = "track" }
+
+# omp's settings, and only those: the file named rather than the directory
+# around it, so nothing in the list above can be pulled in by a later glob.
+# Provider keys never land here — those go to agent.db, or to a models.yml
+# this does not track.
+"~/.omp/agent/config.yml" = { mode = "track" }
 
 # History commits land in a local git repo in plaintext, so anything that
 # carries a credential or is pure churn is kept out of it.
@@ -57,8 +65,13 @@ exclude = [
   "**/node_modules/**",
 ]
 
+# A repo of its own, not this one. The history store is a separate git
+# history — checkpoints under a `home/` prefix — so pushing it at the
+# bootstrap repo could never fast-forward, and mise refuses to replace either
+# side ("local and origin histories are unrelated"). Private, because tracked
+# files are committed in plaintext.
 [history.origin]
-url = "git@github.com:btkostner/dotfiles.git"
+url = "git@github.com:btkostner/dotfiles-history.git"
 branch = "main"
 
 # Languages and their package managers only. Everything else — the shell, the
