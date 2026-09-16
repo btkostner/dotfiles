@@ -42,25 +42,19 @@ builtin = "history-watch"
 #   1Password, op   credentials and session state
 #   raycast(-x)     ~450 MB of binary state, not config
 [dotfiles]
-"~/.config/entire" = { mode = "track" }
-"~/.config/gh" = { mode = "track" }
-"~/.config/git" = { mode = "track" }
-"~/.config/jgit" = { mode = "track" }
-"~/.config/mole" = { mode = "track" }
-"~/.config/opencode" = { mode = "track" }
-"~/.config/uv" = { mode = "track" }
+"~/.config/gh/config.yml" = { mode = "track" }
+"~/.config/git/ignore" = { mode = "track" }
 
 # History commits land in a local git repo in plaintext, so anything that
 # carries a credential or is pure churn is kept out of it.
 [history]
 exclude = [
-  "~/.config/gh/hosts.yml",
-  "~/.config/opencode/node_modules/**",
-  "**/*token*",
   "**/*.lock",
   "**/*.log",
-  "**/cache/**",
+  "**/*token*",
   "**/Cache/**",
+  "**/cache/**",
+  "**/node_modules/**",
 ]
 
 [history.origin]
