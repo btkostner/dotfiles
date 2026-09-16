@@ -7,11 +7,13 @@
 // custom settings, run the `open default settings` command
 // from the command palette or from `Zed` application menu.
 {
+  "edit_predictions": {
+    "provider": "zed"
+  },
   "agent": {
-    "always_allow_tool_actions": true,
-    "default_model": {
-      "provider": "copilot_chat",
-      "model": "gpt-5"
+    "notify_when_agent_waiting": "never",
+    "tool_permissions": {
+      "default": "allow"
     }
   },
   // omp is the harness. Zed talks to it over ACP, so the model, the
@@ -29,9 +31,6 @@
       "args": ["acp"],
       "env": {}
     }
-  },
-  "features": {
-    "edit_prediction_provider": "copilot"
   },
   "buffer_font_size": 16,
   "tab_bar": {
@@ -54,19 +53,5 @@
     "calt": true
   },
   "ui_font_size": 14,
-  "context_servers": {
-    "tidewave": {
-      "source": "custom",
-      "command": "{{ exec(command="command -v mcp-proxy || echo mcp-proxy") | trim }}",
-      "args": ["http://localhost:$PORT/tidewave/mcp"],
-      "env": null,
-      "settings": {}
-    },
-    "mcp-server-github": {
-      "source": "extension",
-      "settings": {
-        "github_personal_access_token": "{{ secret(name="zed_github_token") }}"
-      }
-    }
-  }
+  "context_servers": {}
 }

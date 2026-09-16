@@ -19,8 +19,8 @@ default_mode = "symlink"
 # ---------------------------------------------------------------------------
 # Packages
 #
-# Installed before dotfiles are applied, so `op` is on PATH by the time the
-# Zed template asks 1Password for a token.
+# Installed before dotfiles are applied, so the binaries the templates resolve
+# by absolute path already exist by the time they are rendered.
 # ---------------------------------------------------------------------------
 
 [bootstrap.packages]
@@ -63,20 +63,6 @@ default_mode = "symlink"
 # evaluating the tap's Casks/*.rb — which needs Ruby 3, while macOS ships 2.6.
 # That failure takes down `mise bootstrap plan` entirely, so `entire` stays a
 # plain `brew install` like docker-desktop. See the README.
-
-# ---------------------------------------------------------------------------
-# Secrets
-#
-# Declares what the templates need, not what the values are. fnox.toml points
-# each one at 1Password and gives it an empty default, so a machine without
-# 1Password still renders and finishes — allow_empty is the half of that
-# bargain mise holds up.
-#
-#   fnox exec -- mise bootstrap
-# ---------------------------------------------------------------------------
-
-[bootstrap.secrets]
-zed_github_token = { env = "ZED_GITHUB_TOKEN", description = "GitHub PAT for Zed's MCP server", allow_empty = true }
 
 # ---------------------------------------------------------------------------
 # Hooks
@@ -150,8 +136,14 @@ state = "absent"
 [bootstrap.files."~/.zshrc"]
 state = "absent"
 
+# The only one of these that is a directory, and zsh keeps per-session history
+# files in it, so it is never empty by the time bootstrap gets here. `absent`
+# on its own stops at ENOTEMPTY ("Directory not empty (os error 66)") and
+# fails the whole run; mise wants `recursive` to delete a directory that has
+# contents, and shows it as destructive in the plan.
 [bootstrap.directories."~/.zsh_sessions"]
 state = "absent"
+recursive = true
 
 # ---------------------------------------------------------------------------
 # Repos
@@ -239,6 +231,12 @@ AppleInterfaceStyle = "Dark"
 "~/.config/starship.toml" = "dotfiles/config/starship.toml"
 "~/.config/mise/config.toml" = "dotfiles/config/mise/config.toml"
 
+# Both plain links now that nothing in the settings is rendered. Zed rewrites
+# settings.json itself whenever a preference is changed in its UI, and a link
+# means those edits land in this repo rather than being overwritten on the
+# next apply. Switch to mode = "copy" if that turns out to be unwanted.
+"~/.config/zed/settings.json" = "dotfiles/config/zed/settings.json"
+
 # Zed has no setting that picks a default agent, so this rebinds the agent
 # panel's new-thread key to omp. See the README.
 "~/.config/zed/keymap.json" = "dotfiles/config/zed/keymap.json"
@@ -283,13 +281,6 @@ mode = "template"
 
 [dotfiles."~/.config/nushell/scripts/gh-npm.nu"]
 source = "dotfiles/config/nushell/scripts/gh-npm.nu.tmpl"
-mode = "template"
-
-# Rendered rather than linked, because it pulls a token out of 1Password.
-# The token comes out empty when `op` is missing or locked instead of failing
-# the whole run.
-[dotfiles."~/.config/zed/settings.json"]
-source = "dotfiles/config/zed/settings.json.tmpl"
 mode = "template"
 
 # ---------------------------------------------------------------------------

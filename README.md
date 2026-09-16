@@ -16,7 +16,7 @@ See [Linux](#linux) for what still does not work there.
 | [`dotfiles/`](dotfiles) | The actual config files, laid out to mirror where they land in `$HOME` |
 | [`hk.pkl`](hk.pkl) | Lint and format steps, and which git hooks run them |
 | [`scripts/`](scripts) | The bootstrap hooks, as shell rather than TOML so they get linted |
-| [`fnox.toml`](fnox.toml) | Where each declared secret comes from — references only, no values |
+| [`fnox.toml`](fnox.toml) | Where a declared secret would come from — references only, no values, none declared today |
 
 `dotfiles/` is not magic. There is no name mangling and no `dot_` prefix —
 every file is listed explicitly in the `[dotfiles]` table of `mise.toml`, and
@@ -69,8 +69,8 @@ so it is harmless — but add `--skip task` if you want a genuinely inert run.
 `mise bootstrap` walks its phases in a fixed order, which is what makes the
 declarations above safe to write in any order:
 
-1. **Packages** — Homebrew formulae and casks. First, so `op` exists before
-   anything asks 1Password for a secret.
+1. **Packages** — Homebrew formulae and casks. First, so the binaries the
+   templates bake in by absolute path exist before they are rendered.
 2. **Files and directories** — creates `~/.ssh` (0700) and the work projects
    directory, and deletes the bash/zsh leftovers.
 3. **Repos** — clones AstroNvim into `~/.config/nvim`.
@@ -102,24 +102,29 @@ under `[dotfiles]`:
 | `projects/hiivemarkets/gitconfig` | so is `op-ssh-sign` |
 | `config/nushell/env.nu` | Homebrew paths, the Zed and Postgres.app aliases, and the Erlang build flags are all macOS-only |
 | `config/nushell/scripts/{mise,starship,gh-npm}.nu` | each calls a binary by absolute path |
-| `config/zed/settings.json` | pulls a token out of 1Password |
 
 **Rendered files are copies, not links.** Editing the deployed file does not
 edit this repo — edit the `.tmpl` and re-apply, or use `mise dot edit`.
 
 ## Secrets
 
-[`mise.toml`](mise.toml) declares *what* the templates need;
-[`fnox.toml`](fnox.toml) says *where* it comes from. Neither holds a value, so
-both are safe to commit:
+None are declared right now. The Zed GitHub PAT was the only one, and the MCP
+server that needed it is gone — so nothing under `dotfiles/` asks 1Password
+for a value while rendering, and a plain `mise bootstrap` needs no fnox
+wrapper. 1Password is still a package here; it is the *agent* that `ssh/config`
+and the work `gitconfig` point at, which is a path, not a secret.
+
+The wiring stays for the next one. [`mise.toml`](mise.toml) declares *what* a
+template needs; [`fnox.toml`](fnox.toml) says *where* it comes from. Neither
+holds a value, so both are safe to commit:
 
 ```toml
 # mise.toml
 [bootstrap.secrets]
-zed_github_token = { env = "ZED_GITHUB_TOKEN", allow_empty = true }
+some_token = { env = "SOME_TOKEN", allow_empty = true }
 
 # fnox.toml
-ZED_GITHUB_TOKEN = { provider = "onepassword", value = "op://...", default = "", if_missing = "warn" }
+SOME_TOKEN = { provider = "onepassword", value = "op://...", default = "", if_missing = "warn" }
 ```
 
 Run bootstrap through fnox so the values are in the environment:
@@ -144,19 +149,14 @@ not the same:
 | bootstrap run without fnox at all | hard error, nothing rendered |
 
 The middle row is the point: a machine with no 1Password still gets a
-complete, valid `settings.json` — just without a token in it. mise refuses to
-leave a file half-rendered, so without `allow_empty` that row would be a
-failed run.
+complete, valid file — just without the value in it. mise refuses to leave a
+file half-rendered, so without `allow_empty` that row would be a failed run.
 
 The last row is a genuine gap on a brand-new machine, because fnox installs
-during the tools phase, which is *after* dotfiles. For that one first run:
-
-```bash
-ZED_GITHUB_TOKEN= mise bootstrap
-```
-
-`mise bootstrap --prompt-secrets` also works and will ask for the value.
-Every run after that picks fnox up automatically.
+during the tools phase, which is *after* dotfiles. For that one first run,
+either set the variable empty (`SOME_TOKEN= mise bootstrap`) or use
+`mise bootstrap --prompt-secrets`, which asks for the value. Every run after
+that picks fnox up automatically.
 
 `mise bootstrap secrets status` lists what is declared and whether it
 resolves, without printing any of it.
