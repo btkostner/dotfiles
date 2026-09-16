@@ -106,6 +106,11 @@ under `[dotfiles]`:
 **Rendered files are copies, not links.** Editing the deployed file does not
 edit this repo — edit the `.tmpl` and re-apply, or use `mise dot edit`.
 
+**Ghostty is installed on macOS** from Homebrew's `ghostty` cask. The cask
+repackages Ghostty's official signed and notarized `.dmg`; Linux intentionally
+does not install it because the Ghostty project only distributes prebuilt
+binaries for macOS.
+
 ## Secrets
 
 None are declared right now. The Zed GitHub PAT was the only one, and the MCP

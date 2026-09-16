@@ -43,6 +43,8 @@ default_mode = "symlink"
 # rather than glyphs.
 "brew-cask:font-fira-code-nerd-font" = { version = "latest", os = "macos" }
 "apt:fonts-firacode" = { version = "latest", os = "linux" }
+# Ghostty's cask repackages the official macOS binary from the Ghostty project.
+"brew-cask:ghostty" = { version = "latest", os = "macos" }
 
 # These three come from third-party apt repositories that the pre-packages
 # hook below adds first. starship is not here: it has no apt repository
