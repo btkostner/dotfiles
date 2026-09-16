@@ -333,9 +333,13 @@ from the Dock can actually find, since launchd hands it a PATH with neither
 that needs sudo.
 
 The harness settings in `~/.omp/agent/config.yml` are symlinked from
-[`dotfiles/omp/agent/config.yml`](dotfiles/omp/agent/config.yml). Only that
-file is deployed: the sibling credential databases, model state, history and
-sessions remain local.
+[`dotfiles/omp/agent/config.yml`](dotfiles/omp/agent/config.yml), and
+`~/.omp/agent/APPEND_SYSTEM.md` (global appended system-prompt
+instructions, used unless a project puts its own `APPEND_SYSTEM.md` in
+that repo's config, which takes precedence instead of combining) from
+[`dotfiles/omp/agent/APPEND_SYSTEM.md`](dotfiles/omp/agent/APPEND_SYSTEM.md).
+Only those two files are deployed: the sibling credential databases, model
+state, history and sessions remain local.
 
 ### Zed
 
