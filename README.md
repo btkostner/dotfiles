@@ -332,6 +332,11 @@ from the Dock can actually find, since launchd hands it a PATH with neither
 `~/.local/bin` nor `/opt/homebrew/bin` in it. The symlink is the only part
 that needs sudo.
 
+The harness settings in `~/.omp/agent/config.yml` are symlinked from
+[`dotfiles/omp/agent/config.yml`](dotfiles/omp/agent/config.yml). Only that
+file is deployed: the sibling credential databases, model state, history and
+sessions remain local.
+
 ### Zed
 
 Zed drives omp over [ACP](https://agentclientprotocol.com), so the models, the
@@ -418,7 +423,6 @@ in this repo's git history. What gets tracked is the config *around* them.
 | --- | --- |
 | `gh/config.yml` | small, hand-edited, nothing else backs it up |
 | `git/ignore` | same |
-| `.omp/agent/config.yml` | the harness settings, tuned by hand through omp itself |
 
 Each names a file rather than the directory around it, which is what
 `388f4d1` tightened: a directory entry sweeps up whatever lands beside it

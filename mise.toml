@@ -233,6 +233,10 @@ AppleInterfaceStyle = "Dark"
 "~/.config/starship.toml" = "dotfiles/config/starship.toml"
 "~/.config/mise/config.toml" = "dotfiles/config/mise/config.toml"
 
+# Only omp's settings file is linked. The sibling databases and sessions hold
+# credentials or high-churn runtime state and must stay out of this repo.
+"~/.omp/agent/config.yml" = "dotfiles/omp/agent/config.yml"
+
 # Both plain links now that nothing in the settings is rendered. Zed rewrites
 # settings.json itself whenever a preference is changed in its UI, and a link
 # means those edits land in this repo rather than being overwritten on the

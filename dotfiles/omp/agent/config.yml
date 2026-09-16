@@ -1,0 +1,74 @@
+providers:
+  webSearchOrder: []
+  anthropic:
+    serverSideFallback: true
+  memoryModel: lfm2-1.2b
+  tinyModel: lfm2.5-230m
+  tinyModelDevice: mlx
+  tinyModelDtype: default
+modelRoles:
+  default: openai-codex/gpt-5.6-sol
+symbolPreset: nerd
+composer:
+  shape: pi
+theme:
+  dark: dark-one
+  light: light-one
+setupVersion: 2
+terminal:
+  showProgress: true
+tui:
+  renderMermaid: true
+display:
+  showTokenUsage: true
+  showTurnTime: true
+  cacheMissMarker: false
+tier:
+  openai: none
+  anthropic: none
+personality: pragmatic
+retry:
+  waitForUsageReset: true
+  usageAwareFallback: true
+  fallbackRevertPolicy: cooldown-expiry
+advisor:
+  enabled: true
+prewalk:
+  enabled: true
+error:
+  notify: "off"
+startup:
+  quiet: true
+marketplace:
+  autoUpdate: auto
+power:
+  sleepPrevention: idle
+features:
+  unexpectedStopDetection: smart
+compaction:
+  experimentalContextManagement: true
+  handoffSaveToDisk: true
+  idleEnabled: true
+memory:
+  backend: mnemopi
+autolearn:
+  enabled: true
+  autoContinue: true
+mnemopi:
+  scoping: per-project-tagged
+  enhancedRecall: true
+  proactiveLinking: true
+  polyphonicRecall: true
+  llmMode: smol
+eval:
+  autoBackground:
+    enabled: true
+plan:
+  autosave: false
+task:
+  eager: preferred
+  enableEffort: true
+  maxEffort: high
+  prewalk: true
+  isolation:
+    commits: generic
