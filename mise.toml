@@ -156,6 +156,10 @@ state = "absent"
 state = "absent"
 recursive = true
 
+[bootstrap.directories."~/.config/terraform"]
+state = "absent"
+recursive = true
+
 # ---------------------------------------------------------------------------
 # Repos
 # ---------------------------------------------------------------------------
@@ -176,6 +180,7 @@ program = "/bin/sh"
 args = [
   "-c",
   '''
+  launchctl unsetenv TF_CLI_CONFIG_FILE
   launchctl setenv XDG_CACHE_HOME "$HOME/.cache"
   launchctl setenv XDG_CONFIG_HOME "$HOME/.config"
   launchctl setenv XDG_DATA_HOME "$HOME/.local/share"
