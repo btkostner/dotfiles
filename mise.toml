@@ -233,6 +233,8 @@ AppleInterfaceStyle = "Dark"
 "~/.config/starship.toml" = "dotfiles/config/starship.toml"
 "~/.config/mise/config.toml" = "dotfiles/config/mise/config.toml"
 
+"~/.paseo/config.json" = "dotfiles/paseo/config.json"
+
 # Only omp's settings file and system-prompt append are linked. The sibling
 # databases and sessions hold credentials or high-churn runtime state and
 # must stay out of this repo.
@@ -256,6 +258,12 @@ AppleInterfaceStyle = "Dark"
 source = "dotfiles/config/nushell"
 mode = "symlink-each"
 exclude = ["*.tmpl"]
+
+[dotfiles."paseo/desktop-settings.json"]
+source = "dotfiles/config/paseo/desktop-settings.json"
+variants = [
+  { os = "macos", target = "~/Library/Application Support/Paseo/desktop-settings.json" },
+]
 
 # ---------------------------------------------------------------------------
 # Templated dotfiles
