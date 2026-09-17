@@ -393,3 +393,6 @@ source ./scripts/mise.nu
 source ./scripts/starship.nu
 source ./scripts/warp.nu
 source ./scripts/zoxide.nu
+def --wrapped kubectl [...args: string] {
+    ^kubectl --cache-dir ($env.XDG_CACHE_HOME | path join "kubectl") ...$args
+}
