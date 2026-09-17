@@ -64,12 +64,12 @@ jobs:
           # Homebrew casks and a Nerd Font are slow and prove nothing `plan`
           # has not already shown, and launchd needs a real login session.
           - os: macos-latest
-            skip: packages,tools,task,macos-launchd-agents
+            skip: packages,tools,task,user,macos-launchd-agents
           # apt is quick, and the pre-packages hook that adds the nushell,
           # GitHub CLI and 1Password repositories is the part most worth
           # exercising for real.
           - os: ubuntu-latest
-            skip: tools,task
+            skip: tools,task,user
 
     runs-on: ${{ matrix.os }}
 

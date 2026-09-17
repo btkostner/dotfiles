@@ -98,7 +98,11 @@ run = "sh scripts/register-shell.sh"
 # Dock and Finder read their preferences at launch, so applied changes do not
 # become visible until they are restarted.
 [bootstrap.hooks.post-defaults]
-run = ["sh scripts/configure-dock-apps.sh", "killall Dock || true", "killall Finder || true"]
+run = [
+  "sh scripts/configure-dock-apps.sh",
+  "killall Dock || true",
+  "killall Finder || true",
+]
 
 # ---------------------------------------------------------------------------
 # Directories
