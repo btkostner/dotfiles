@@ -90,10 +90,10 @@ run = ["sh scripts/clear-nushell-stubs.sh", "sh scripts/install-omp.sh"]
 [bootstrap.hooks.pre-user]
 run = "sh scripts/register-shell.sh"
 
-# Dock and Finder read their preferences at launch, so a tile list or an
-# autohide change does nothing visible until they are restarted.
+# Dock and Finder read their preferences at launch, so applied changes do not
+# become visible until they are restarted.
 [bootstrap.hooks.post-defaults]
-run = "killall Dock || true"
+run = ["killall Dock || true", "killall Finder || true"]
 
 # ---------------------------------------------------------------------------
 # Directories
@@ -207,6 +207,15 @@ apps = [
   "/System/Applications/System Settings.app",
 ]
 
+[bootstrap.macos.defaults."com.apple.finder"]
+FinderSpawnTab = false
+FXDefaultSearchScope = "SCcf"
+NewWindowTarget = "PfHm"
+ShowExternalHardDrivesOnDesktop = true
+ShowHardDrivesOnDesktop = true
+ShowRecentTags = false
+ShowRemovableMediaOnDesktop = true
+
 [bootstrap.macos.keyboard]
 automatic_capitalization = true
 automatic_spelling_correction = false
@@ -215,9 +224,11 @@ automatic_spelling_correction = false
 tap_to_click = false
 three_finger_drag = false
 
-# Dark mode has no curated section, so it goes in as a raw default.
+# Dark mode and showing all filename extensions have no curated sections, so
+# they go in as raw defaults.
 [bootstrap.macos.defaults.NSGlobalDomain]
 AppleInterfaceStyle = "Dark"
+AppleShowAllExtensions = true
 
 # ---------------------------------------------------------------------------
 # Dotfiles
