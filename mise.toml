@@ -163,6 +163,7 @@ recursive = true
 [bootstrap.repos."~/.config/nvim"]
 url = "https://github.com/AstroNvim/AstroNvim.git"
 
+
 # ---------------------------------------------------------------------------
 # macOS
 # ---------------------------------------------------------------------------
@@ -280,10 +281,11 @@ AppleShowAllExtensions = true
 
 "~/.paseo/config.json" = "dotfiles/paseo/config.json"
 
-# Only omp's settings file and system-prompt append are linked. The sibling
-# databases and sessions hold credentials or high-churn runtime state and
-# must stay out of this repo.
+# Only omp's settings, MCP configuration, and system-prompt append are linked.
+# The sibling databases and sessions hold credentials or high-churn runtime
+# state and must stay out of this repo.
 "~/.omp/agent/config.yml" = "dotfiles/omp/agent/config.yml"
+"~/.omp/agent/mcp.json" = "dotfiles/omp/agent/mcp.json"
 "~/.omp/agent/APPEND_SYSTEM.md" = "dotfiles/omp/agent/APPEND_SYSTEM.md"
 
 # Both plain links now that nothing in the settings is rendered. Zed rewrites

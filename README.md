@@ -61,8 +61,9 @@ mise bootstrap --dry-run   # print every command the full run would execute
 ```
 
 One caveat on `--dry-run`: the `[tasks.bootstrap]` task runs for real on every
-invocation, dry or not. Here that task is `mise install`, which is idempotent,
-so it is harmless — but add `--skip task` if you want a genuinely inert run.
+invocation, dry or not. It installs the global toolchain, applies the history
+service, and installs repo-local hooks; add `--skip task` for a genuinely inert
+preview.
 
 ## What runs, in order
 
@@ -81,7 +82,8 @@ declarations above safe to write in any order:
 6. **LaunchAgents** — installs the XDG agent.
 7. **User** — `chsh` to nushell.
 8. **Tools** — installs `[tools]` from every loaded mise config.
-9. **`[tasks.bootstrap]`** — `mise install` and `hk install`.
+9. **`[tasks.bootstrap]`** — installs the global toolchain, applies the history
+   service, and installs `hk`.
 
 ## Notes on the pieces
 
@@ -335,12 +337,14 @@ from the Dock can actually find, since launchd hands it a PATH with neither
 that needs sudo.
 
 The harness settings in `~/.omp/agent/config.yml` are symlinked from
-[`dotfiles/omp/agent/config.yml`](dotfiles/omp/agent/config.yml), and
-`~/.omp/agent/APPEND_SYSTEM.md` (global appended system-prompt
-instructions, used unless a project puts its own `APPEND_SYSTEM.md` in
-that repo's config, which takes precedence instead of combining) from
+[`dotfiles/omp/agent/config.yml`](dotfiles/omp/agent/config.yml), its generic
+Cloudflare MCP configuration from
+[`dotfiles/omp/agent/mcp.json`](dotfiles/omp/agent/mcp.json), and
+`~/.omp/agent/APPEND_SYSTEM.md` (global appended system-prompt instructions,
+used unless a project puts its own `APPEND_SYSTEM.md` in that repo's config,
+which takes precedence instead of combining) from
 [`dotfiles/omp/agent/APPEND_SYSTEM.md`](dotfiles/omp/agent/APPEND_SYSTEM.md).
-Only those two files are deployed: the sibling credential databases, model
+Only those three files are deployed: the sibling credential databases, model
 state, history and sessions remain local.
 
 ### Zed
@@ -543,8 +547,6 @@ repo on the machine and no-ops wherever there is no `hk.pkl`. That writes to
 `~/.gitconfig` — a file this repo tracks — so the setting would end up in
 `dotfiles/gitconfig` and follow you to the next machine. Repo-local is the
 default here only because it keeps the blast radius to this repo.
-
-### Things worth knowing
 
 **mise manages languages, not machine software.** The global config carries
 only `fnox`, `node` and `npm`; the shell, the prompt and the CLI tools all

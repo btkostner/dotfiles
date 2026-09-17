@@ -41,8 +41,8 @@ builtin = "history-watch"
 #   github-copilot  auth.db is an OAuth token store
 #   1Password, op   credentials and session state
 #   raycast(-x)     ~450 MB of binary state, not config
-#   .omp/agent      config.yml and APPEND_SYSTEM.md are deployed by this
-#                   repo; agent.db is the OAuth store, while models.db,
+#   .omp/agent      config.yml, mcp.json, and APPEND_SYSTEM.md are deployed
+#                   by this repo; agent.db is the OAuth store, while models.db,
 #                   history.db and sessions/ are churn
 [dotfiles]
 "~/.config/gh/config.yml" = { mode = "track" }

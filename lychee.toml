@@ -1,0 +1,1 @@
+exclude = ["^https?://mcp[.]cloudflare[.]com/mcp$"]
