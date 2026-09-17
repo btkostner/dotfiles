@@ -280,7 +280,7 @@ than a wall of settings.
 
 | Section | What it covers |
 | --- | --- |
-| `[bootstrap.macos.dock]` | autohide, no recents, and the eleven pinned tiles in order |
+| `[bootstrap.macos.dock]` | autohide and no recents; `scripts/configure-dock-apps.sh` manages pinned apps |
 | `[bootstrap.macos.keyboard]` | autocapitalise on, autocorrect off |
 | `[bootstrap.macos.trackpad]` | tap-to-click off, three-finger drag off |
 | `[bootstrap.macos.defaults]` | dark mode, which has no curated section |
@@ -290,9 +290,11 @@ The curated sections compile down to `defaults write`; the raw
 not cover. `mise bootstrap macos defaults apply --dry-run` prints the exact
 commands.
 
-Because the Dock tile list is managed, rearranging it by hand now counts as
-drift and gets reverted on the next apply. Drop `apps` if that becomes
-annoying — the rest of the section works without it.
+The Dock tile list is managed in the order recorded by
+[`scripts/configure-dock-apps.sh`](scripts/configure-dock-apps.sh), using the
+`dockutil` package declared in `mise.toml`. An app is pinned only when its
+bundle exists, so systems without Slack, Linear, Notion, or another optional
+application still bootstrap cleanly.
 
 ## Login shell
 

@@ -45,6 +45,7 @@ default_mode = "symlink"
 "apt:fonts-firacode" = { version = "latest", os = "linux" }
 # Ghostty's cask repackages the official macOS binary from the Ghostty project.
 "brew-cask:ghostty" = { version = "latest", os = "macos" }
+"brew:dockutil" = { version = "latest", os = "macos" }
 
 # These three come from third-party apt repositories that the pre-packages
 # hook below adds first. starship is not here: it has no apt repository
@@ -93,7 +94,7 @@ run = "sh scripts/register-shell.sh"
 # Dock and Finder read their preferences at launch, so applied changes do not
 # become visible until they are restarted.
 [bootstrap.hooks.post-defaults]
-run = ["killall Dock || true", "killall Finder || true"]
+run = ["sh scripts/configure-dock-apps.sh", "killall Dock || true", "killall Finder || true"]
 
 # ---------------------------------------------------------------------------
 # Directories
@@ -193,19 +194,6 @@ login_shell = "/usr/local/bin/nu"
 [bootstrap.macos.dock]
 autohide = true
 show_recents = false
-apps = [
-  "/Applications/Zen.app",
-  "/System/Applications/Messages.app",
-  "/System/Applications/Mail.app",
-  "/System/Applications/Calendar.app",
-  "/System/Applications/Reminders.app",
-  "/System/Applications/Notes.app",
-  "/System/Applications/Music.app",
-  "/Applications/Zed.app",
-  "/System/Applications/App Store.app",
-  "/System/Applications/Campo.app",
-  "/System/Applications/System Settings.app",
-]
 
 [bootstrap.macos.defaults."com.apple.finder"]
 FinderSpawnTab = false
