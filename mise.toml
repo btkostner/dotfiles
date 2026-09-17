@@ -82,7 +82,11 @@ run = "sh scripts/linux-repos.sh"
 # And omp is the binary the Zed settings name by absolute path, so it goes in
 # ahead of them rather than a phase later.
 [bootstrap.hooks.pre-dotfiles]
-run = ["sh scripts/clear-nushell-stubs.sh", "sh scripts/install-omp.sh"]
+run = [
+  "sh scripts/clear-nushell-stubs.sh",
+  "sh scripts/migrate-xdg-paths.sh",
+  "sh scripts/install-omp.sh",
+]
 
 # [bootstrap.user].login_shell below wants one absolute path that works on
 # every machine; nushell does not have one. This keeps /usr/local/bin/nu
@@ -163,12 +167,50 @@ url = "https://github.com/AstroNvim/AstroNvim.git"
 # `dev.mise.setXDG`; mise namespaces every agent label it writes.
 [bootstrap.macos.launchd.agents.setXDG]
 program = "/bin/sh"
-args = ["-c", '''
+args = [
+  "-c",
+  '''
   launchctl setenv XDG_CACHE_HOME "$HOME/.cache"
   launchctl setenv XDG_CONFIG_HOME "$HOME/.config"
   launchctl setenv XDG_DATA_HOME "$HOME/.local/share"
   launchctl setenv XDG_STATE_HOME "$HOME/.local/state"
-  ''']
+  launchctl setenv AWS_CONFIG_FILE "$HOME/.config/aws/config"
+  launchctl setenv AWS_SHARED_CREDENTIALS_FILE "$HOME/.config/aws/credentials"
+  launchctl setenv AWS_CLI_HISTORY_FILE "$HOME/.local/state/aws/cli/history/history.db"
+  launchctl setenv DOCKER_CONFIG "$HOME/.config/docker"
+  launchctl setenv CARGO_HOME "$HOME/.local/share/cargo"
+  launchctl setenv RUSTUP_HOME "$HOME/.local/share/rustup"
+  launchctl setenv GOPATH "$HOME/.local/share/go"
+  launchctl setenv GOMODCACHE "$HOME/.cache/go/mod"
+  launchctl setenv GOCACHE "$HOME/.cache/go/build"
+  launchctl setenv GOENV "$HOME/.config/go/env"
+  launchctl setenv NPM_CONFIG_USERCONFIG "$HOME/.config/npm/npmrc"
+  launchctl setenv NPM_CONFIG_CACHE "$HOME/.cache/npm"
+  launchctl setenv NPM_CONFIG_PREFIX "$HOME/.local/share/npm"
+  launchctl setenv KUBECONFIG "$HOME/.config/kube/config"
+  launchctl setenv GH_CONFIG_DIR "$HOME/.config/gh"
+  launchctl setenv TF_CLI_CONFIG_FILE "$HOME/.config/terraform/terraform.rc"
+  launchctl setenv TF_PLUGIN_CACHE_DIR "$HOME/.cache/terraform/plugin-cache"
+  launchctl setenv PIP_CACHE_DIR "$HOME/.cache/pip"
+  launchctl setenv PYTHONPYCACHEPREFIX "$HOME/.cache/python"
+  launchctl setenv PIP_CONFIG_FILE "$HOME/.config/pip/pip.conf"
+  launchctl setenv UV_CACHE_DIR "$HOME/.cache/uv"
+  launchctl setenv UV_TOOL_DIR "$HOME/.local/share/uv/tools"
+  launchctl setenv UV_PYTHON_INSTALL_DIR "$HOME/.local/share/uv/python"
+  launchctl setenv MISE_CONFIG_DIR "$HOME/.config/mise"
+  launchctl setenv MISE_CACHE_DIR "$HOME/.cache/mise"
+  launchctl setenv MISE_DATA_DIR "$HOME/.local/share/mise"
+  launchctl setenv MISE_STATE_DIR "$HOME/.local/state/mise"
+  launchctl setenv CLAUDE_CONFIG_DIR "$HOME/.local/share/claude-code"
+  launchctl setenv CODEX_HOME "$HOME/.local/share/codex"
+  launchctl setenv HEX_HOME "$HOME/.local/share/hex"
+  launchctl setenv DENO_DIR "$HOME/.cache/deno"
+  launchctl setenv BUN_INSTALL_CACHE_DIR "$HOME/.cache/bun"
+  launchctl setenv YARN_CACHE_FOLDER "$HOME/.cache/yarn"
+  launchctl setenv WRANGLER_CACHE_DIR "$HOME/.cache/wrangler"
+  launchctl setenv NODE_REPL_HISTORY "$HOME/.local/state/node/repl_history"
+  ''',
+]
 run_at_load = true
 keep_alive = false
 
