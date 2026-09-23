@@ -28,6 +28,17 @@ move_file() {
     mv "$source_path" "$target_path"
   fi
 }
+
+move_dir_unless_target_exists() {
+  source_path=$1
+  target_path=$2
+
+  if [ -e "$source_path" ] && [ -e "$target_path" ]; then
+    return
+  fi
+  move_dir "$source_path" "$target_path"
+}
+
 move_empty_target_dir() {
   source_path=$1
   target_path=$2
@@ -46,18 +57,18 @@ move_empty_target_dir() {
 
 move_file "$HOME/.aws/config" "$HOME/.config/aws/config"
 move_file "$HOME/.aws/credentials" "$HOME/.config/aws/credentials"
-move_dir "$HOME/.docker" "$HOME/.config/docker"
-move_dir "$HOME/.cargo" "$HOME/.local/share/cargo"
-move_dir "$HOME/.rustup" "$HOME/.local/share/rustup"
-move_dir "$HOME/.npm" "$HOME/.cache/npm"
+move_dir_unless_target_exists "$HOME/.docker" "$HOME/.config/docker"
+move_dir_unless_target_exists "$HOME/.cargo" "$HOME/.local/share/cargo"
+move_dir_unless_target_exists "$HOME/.rustup" "$HOME/.local/share/rustup"
+move_dir_unless_target_exists "$HOME/.npm" "$HOME/.cache/npm"
 move_file "$HOME/.npmrc" "$HOME/.config/npm/npmrc"
-move_dir "$HOME/.claude" "$HOME/.local/share/claude-code"
-move_dir "$HOME/.codex" "$HOME/.local/share/codex"
-move_dir "$HOME/.hex" "$HOME/.local/share/hex"
+move_dir_unless_target_exists "$HOME/.claude" "$HOME/.local/share/claude-code"
+move_dir_unless_target_exists "$HOME/.codex" "$HOME/.local/share/codex"
+move_dir_unless_target_exists "$HOME/.hex" "$HOME/.local/share/hex"
 move_file "$HOME/.kube/config" "$HOME/.config/kube/config"
-move_dir "$HOME/.kube/cache" "$HOME/.cache/kubectl"
+move_dir_unless_target_exists "$HOME/.kube/cache" "$HOME/.cache/kubectl"
 move_empty_target_dir "$HOME/go/pkg/mod" "$HOME/.cache/go/mod"
-move_dir "$HOME/go" "$HOME/.local/share/go"
+move_dir_unless_target_exists "$HOME/go" "$HOME/.local/share/go"
 
 mkdir -p \
   "$HOME/.cache/go/mod" \

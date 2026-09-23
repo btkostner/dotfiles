@@ -238,6 +238,11 @@ mise bootstrap --dry-run
 mise bootstrap --force-dotfiles
 ```
 
+Docker Desktop and other tools may create XDG directories before this
+migration runs. When both legacy and XDG paths exist, the migration keeps the
+XDG path and leaves the legacy path untouched; file conflicts and the special
+Go module migration still fail rather than merge data.
+
 ### Moving mise off Homebrew
 
 Worth checking before anything else, because a brew-installed mise cannot
