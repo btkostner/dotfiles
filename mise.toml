@@ -292,6 +292,7 @@ AppleShowAllExtensions = true
 "~/.omp/agent/config.yml" = "dotfiles/omp/agent/config.yml"
 "~/.omp/agent/mcp.json" = "dotfiles/omp/agent/mcp.json"
 "~/.omp/agent/APPEND_SYSTEM.md" = "dotfiles/omp/agent/APPEND_SYSTEM.md"
+"~/.omp/agent/PERSONALITY.md" = "dotfiles/omp/agent/PERSONALITY.md"
 
 # Both plain links now that nothing in the settings is rendered. Zed rewrites
 # settings.json itself whenever a preference is changed in its UI, and a link
