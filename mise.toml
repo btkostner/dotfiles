@@ -304,6 +304,11 @@ AppleShowAllExtensions = true
 # panel's new-thread key to omp. See the README.
 "~/.config/zed/keymap.json" = "dotfiles/config/zed/keymap.json"
 
+# Link common agent skill files
+[dotfiles."~/.agents"]
+source = "dotfiles/agents"
+mode = "symlink-each"
+
 # Linked file by file: nushell writes history and plugin state into this
 # directory and that should not land in this repo. Templates are excluded here
 # and deployed individually below.
