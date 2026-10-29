@@ -1,13 +1,16 @@
 providers:
-  webSearchOrder: []
   anthropic:
     serverSideFallback: true
-  memoryModel: lfm2-1.2b
-  tinyModel: lfm2.5-230m
+  cloudflare:
+    base_url: https://ai-gateway.hiive.network
   tinyModelDevice: mlx
   tinyModelDtype: default
 modelRoles:
-  default: openai-codex/gpt-5.6-sol
+  tiny: local/lfm2.5-230m
+  memory: local/lfm2-1.2b
+  smol: openai-codex/gpt-6-luna
+  default: openai-codex/gpt-6.1-terra
+  advisor: openai-codex/gpt-6.1-sol:auto
 symbolPreset: nerd
 composer:
   shape: pi
@@ -32,9 +35,12 @@ retry:
   usageAwareFallback: true
   fallbackRevertPolicy: cooldown-expiry
 advisor:
-  enabled: true
+  enabled: false
+  syncBacklog: "1"
+  immuneTurns: 2
+  maxNotesPerUpdate: 4
 prewalk:
-  enabled: true
+  enabled: false
 error:
   notify: "off"
 startup:
@@ -72,3 +78,8 @@ task:
   prewalk: true
   isolation:
     commits: generic
+dev:
+  autoqaConsent: denied
+defaultThinkingLevel: auto
+inlineToolDescriptors: auto
+autoResume: true

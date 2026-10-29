@@ -7,14 +7,9 @@
 // custom settings, run the `open default settings` command
 // from the command palette or from `Zed` application menu.
 {
+  "cli_default_open_behavior": "existing_window",
   "edit_predictions": {
     "provider": "zed"
-  },
-  "agent": {
-    "notify_when_agent_waiting": "never",
-    "tool_permissions": {
-      "default": "allow"
-    }
   },
   // omp is the harness. Zed talks to it over ACP, so the model, the
   // subscriptions and the tools are all omp's — the "agent" block above only
@@ -26,6 +21,9 @@
   // terminal and broken from the Dock.
   "agent_servers": {
     "omp": {
+      "default_config_options": {
+        "model": "anthropic/claude-sonnet-5-5"
+      },
       "type": "custom",
       "command": "/usr/local/bin/omp",
       "args": ["acp"],

@@ -6,3 +6,7 @@ requirement, a workaround for another system's behavior, a "why", not a
 "what"). Never restate the code, narrate the diff/PR process ("moved this
 here", "kept separate for review"), or catalog values already visible in the
 surrounding declarations/config.
+
+## Work
+
+Do not concern yourself with engineering time when creating plans or doing work.
