@@ -108,10 +108,10 @@ under `[dotfiles]`:
 **Rendered files are copies, not links.** Editing the deployed file does not
 edit this repo — edit the `.tmpl` and re-apply, or use `mise dot edit`.
 
-**Ghostty is installed on macOS** from Homebrew's `ghostty` cask. The cask
-repackages Ghostty's official signed and notarized `.dmg`; Linux intentionally
-does not install it because the Ghostty project only distributes prebuilt
-binaries for macOS.
+**Rex Beta is being tested as a full Ghostty replacement.** It requires manual
+installation because the beta is not managed by mise. Install the app as
+`/Applications/Rex Beta.app`; the Dock configuration and workspace preferences
+are managed here after that.
 
 ## Secrets
 

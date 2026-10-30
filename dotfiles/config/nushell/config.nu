@@ -71,8 +71,8 @@ let dark_theme = {
     shape_vardecl: purple
 }
 
-let zoxide_completer = {|spans|
-    ...$spans | skip 1 | zoxide query -l $in | lines | where {|x| $x != $env.PWD}
+let zoxide_completer = {|place|
+    $place.command | skip 1 | zoxide query -l ...$in | lines | where {|x| $x != $env.PWD}
 }
 
 # The default config record. This is where much of your global configuration is setup.

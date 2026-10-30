@@ -5,6 +5,9 @@
     "notifications": {
       "playSound": false
     },
+    "tray": {
+      "enabled": false
+    },
     "daemon": {
       "manageBuiltInDaemon": true,
       "keepRunningAfterQuit": true

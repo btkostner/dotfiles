@@ -43,8 +43,6 @@ default_mode = "symlink"
 # rather than glyphs.
 "brew-cask:font-fira-code-nerd-font" = { version = "latest", os = "macos" }
 "apt:fonts-firacode" = { version = "latest", os = "linux" }
-# Ghostty's cask repackages the official macOS binary from the Ghostty project.
-"brew-cask:ghostty" = { version = "latest", os = "macos" }
 "brew:dockutil" = { version = "latest", os = "macos" }
 
 # These three come from third-party apt repositories that the pre-packages
@@ -321,6 +319,13 @@ exclude = ["*.tmpl"]
 source = "dotfiles/config/paseo/desktop-settings.json"
 variants = [
   { os = "macos", target = "~/Library/Application Support/Paseo/desktop-settings.json" },
+]
+
+[dotfiles."rex/preferences.plist"]
+source = "dotfiles/config/rex/preferences.plist.tmpl"
+mode = "template"
+variants = [
+  { os = "macos", target = "~/Library/Preferences/com.superlogical.rex.plist" },
 ]
 
 # ---------------------------------------------------------------------------

@@ -19,7 +19,7 @@ for app in \
   "/Applications/Linear.app" \
   "/Applications/Paseo.app" \
   "/Applications/Zed.app" \
-  "/Applications/Ghostty.app" \
+  "/Applications/Rex Beta.app" \
   "/System/Applications/System Settings.app"; do
   [ -d "$app" ] && dockutil --add "$app" --no-restart
 done
