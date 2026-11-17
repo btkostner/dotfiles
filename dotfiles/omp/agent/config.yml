@@ -9,15 +9,15 @@ modelRoles:
   tiny: local/lfm2.5-230m
   memory: local/lfm2-1.2b
   smol: openai-codex/gpt-6-luna
-  default: openai-codex/gpt-6.1-terra
   advisor: openai-codex/gpt-6.1-sol:auto
+  default: openai-codex/gpt-6.1-sol
 symbolPreset: nerd
 composer:
   shape: pi
 theme:
   dark: dark-one
   light: light-one
-setupVersion: 2
+setupVersion: 3
 terminal:
   showProgress: true
 tui:
@@ -83,3 +83,5 @@ dev:
 defaultThinkingLevel: auto
 inlineToolDescriptors: auto
 autoResume: true
+update:
+  auto: true

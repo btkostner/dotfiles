@@ -22,7 +22,7 @@
   "agent_servers": {
     "omp": {
       "default_config_options": {
-        "model": "anthropic/claude-sonnet-5-5"
+        "model": "openai-codex/gpt-6.1-sol"
       },
       "type": "custom",
       "command": "/usr/local/bin/omp",
