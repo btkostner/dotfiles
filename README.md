@@ -87,8 +87,8 @@ declarations above safe to write in any order:
 
 ## Notes on the pieces
 
-**Most dotfiles are symlinks.** Editing `~/.config/starship.toml` edits the
-file in this repo, and `git diff` is the source of truth for what has drifted.
+**Most dotfiles are symlinks.** Editing a linked file edits the source in this
+repo, and `git diff` is the source of truth for what has drifted.
 
 **Nushell is `symlink-each`,** so each file is linked individually and nushell
 can keep writing history and plugin state into `~/.config/nushell` without any
@@ -103,7 +103,7 @@ under `[dotfiles]`:
 | `ssh/config` | 1Password's agent socket is somewhere else on Linux |
 | `projects/hiivemarkets/gitconfig` | so is `op-ssh-sign` |
 | `config/nushell/env.nu` | Homebrew paths, the Zed and Postgres.app aliases, and the Erlang build flags are all macOS-only |
-| `config/nushell/scripts/{mise,starship,gh-npm}.nu` | each calls a binary by absolute path |
+| `config/nushell/scripts/{mise,gh-npm}.nu` | each calls a binary by absolute path |
 
 **Rendered files are copies, not links.** Editing the deployed file does not
 edit this repo — edit the `.tmpl` and re-apply, or use `mise dot edit`.
@@ -469,8 +469,7 @@ that on every push.
 
 Ubuntu's own repositories cover `curl`, `gnupg`, `zoxide` and
 `fonts-firacode` — the last standing in for the Nerd Font, which nobody
-packages, and costing nothing because the starship config uses text symbols
-rather than glyphs.
+packages.
 
 Everything else needs a repository added first, which is what
 [`scripts/linux-repos.sh`](scripts/linux-repos.sh) does from
@@ -487,11 +486,6 @@ in `[bootstrap.packages]` and so do not exist yet on the first run, and it
 needs sudo. Re-running adds nothing: a repository with both its keyring and
 its list file present is skipped.
 
-Starship is the one thing not installed from a package. It reached apt in
-Debian 13 but Ubuntu does not carry it, and a missing apt package is a hard
-error in `[bootstrap.packages]` — so the same script installs it from
-`starship.rs`, preferring apt where apt has it.
-
 The macOS-specific dotfiles are templates now, so a Linux box gets the
 1Password socket at `~/.1password/agent.sock`, `op-ssh-sign` out of
 `/opt/1Password`, and an `env.nu` with no Homebrew, Zed.app or Postgres.app in
@@ -507,10 +501,6 @@ dotfiles phase wants to write, and the run stops dead on them.
 [`scripts/clear-nushell-stubs.sh`](scripts/clear-nushell-stubs.sh) clears them
 from `[bootstrap.hooks.pre-dotfiles]`. It matches on the `# Installed by:`
 header nushell generates, so it will never delete a file this repo put there.
-
-One ordering note: starship installs during the packages phase, which is
-before dotfiles, so `starship.nu` gets the real `/usr/local/bin/starship`
-baked in on the very first run.
 
 ## Day to day
 

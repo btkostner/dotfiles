@@ -118,7 +118,6 @@ jobs:
           # symlinked
           test -L "${HOME}/.editorconfig"
           test -L "${HOME}/.gitconfig"
-          test -L "${HOME}/.config/starship.toml"
           test -L "${HOME}/.config/nushell/config.nu"
           test -L "${HOME}/.config/nushell/scripts/warp.nu"
 
@@ -152,7 +151,6 @@ jobs:
             command -v nu
             command -v gh
             command -v op
-            command -v starship
             command -v zoxide
 
             # and the pre-dotfiles hook cleared nushell's stubs

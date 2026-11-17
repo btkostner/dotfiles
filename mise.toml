@@ -39,15 +39,13 @@ default_mode = "symlink"
 "apt:gh" = { version = "latest", os = "linux" }
 
 # The patched Nerd Font is not packaged for apt. Plain FiraCode is the closest
-# thing there — fine here, since the starship config below uses text symbols
-# rather than glyphs.
+# thing there for terminals that support it.
 "brew-cask:font-fira-code-nerd-font" = { version = "latest", os = "macos" }
 "apt:fonts-firacode" = { version = "latest", os = "linux" }
 "brew:dockutil" = { version = "latest", os = "macos" }
 
-# These three come from third-party apt repositories that the pre-packages
-# hook below adds first. starship is not here: it has no apt repository
-# outside Debian 13+, and a missing apt package is a hard error.
+# These come from third-party apt repositories that the pre-packages
+# hook below adds first.
 "brew:nushell" = { version = "latest", os = "macos" }
 "apt:nushell" = { version = "latest", os = "linux" }
 
@@ -143,6 +141,9 @@ state = "absent"
 state = "absent"
 
 [bootstrap.files."~/.zshrc"]
+state = "absent"
+
+[bootstrap.files."~/.config/starship.toml"]
 state = "absent"
 
 # The only one of these that is a directory, and zsh keeps per-session history
@@ -279,7 +280,6 @@ AppleShowAllExtensions = true
 "~/.editorconfig" = "dotfiles/editorconfig"
 "~/.gitconfig" = "dotfiles/gitconfig"
 "~/.config/ghostty/config" = "dotfiles/config/ghostty/config"
-"~/.config/starship.toml" = "dotfiles/config/starship.toml"
 "~/.config/mise/config.toml" = "dotfiles/config/mise/config.toml"
 
 "~/.paseo/config.json" = "dotfiles/paseo/config.json"

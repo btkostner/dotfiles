@@ -1,7 +1,6 @@
 #!/usr/bin/env sh
 #
-# Adds the third-party apt repositories that [bootstrap.packages] installs
-# from, plus starship, which has no apt repository outside Debian 13+.
+# Adds the third-party apt repositories that [bootstrap.packages] installs.
 #
 # Run from [bootstrap.hooks.pre-packages], so it lands before mise installs
 # anything. Idempotent, and a no-op anywhere that is not Debian-like.
@@ -92,17 +91,4 @@ fi
 if [ "$added" -eq 1 ]; then
   echo "==> apt-get update"
   as_root apt-get update -qq
-fi
-
-# starship reached apt in Debian 13; Ubuntu does not carry it at all, so fall
-# back to the installer upstream documents. Not a [bootstrap.packages] entry
-# because a missing apt package is a hard error there.
-if ! command -v starship >/dev/null 2>&1; then
-  if apt-cache show starship >/dev/null 2>&1; then
-    echo "==> installing starship from apt"
-    as_root apt-get install -y starship
-  else
-    echo "==> installing starship from starship.rs"
-    curl -sS https://starship.rs/install.sh | as_root sh -s -- --yes
-  fi
 fi
