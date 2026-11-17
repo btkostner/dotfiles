@@ -1,9 +1,14 @@
 export-env {
-  let warp_hook = {
-    code: { warp_hook }
+  add-hook hooks.pre_prompt {
+    code: {
+      let now = (date now | into int)
+      let last_check = ($env.WARP_STATUS_LAST_CHECK? | default 0 | into int)
+      if $now < $last_check or ($now - $last_check) >= 30_000_000_000 {
+        warp_hook
+      }
+    }
   }
-  add-hook hooks.pre_prompt $warp_hook
-  add-hook hooks.env_change.PWD $warp_hook
+  warp_hook
 }
 
 def --env add-hook [field: cell-path new_hook: any] {
@@ -17,9 +22,17 @@ def --env warp_hook [] {
     let WARP_CLI = "/Applications/Cloudflare WARP.app/Contents/Resources/warp-cli"
     let SYSTEM_BUNDLE = "/etc/ssl/cert.pem"
 
-    let is_connected = (if ($WARP_CLI | path exists) {
-        try { ^$WARP_CLI status | str contains "Connected" } catch { false }
-    } else { false })
+    let status = (if ($WARP_CLI | path exists) {
+        try { ^$WARP_CLI status | complete } catch { null }
+    } else { null })
+
+    let is_connected = (if $status != null and $status.exit_code == 0 {
+        $env.WARP_STATUS_LAST_CHECK = (date now | into int)
+        $status.stdout | str contains "Connected"
+    } else {
+        do -i { hide-env WARP_STATUS_LAST_CHECK }
+        false
+    })
 
     let warp_certs = if $is_connected {
         glob "/Library/Application Support/Cloudflare/installed_certs/*.pem"

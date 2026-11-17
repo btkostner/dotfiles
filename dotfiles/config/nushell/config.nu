@@ -390,7 +390,7 @@ $env.config = {
 
 source ./scripts/gh-npm.nu
 source ./scripts/mise.nu
-source ./scripts/starship.nu
+source ./scripts/prompt.nu
 source ./scripts/warp.nu
 source ./scripts/zoxide.nu
 def --wrapped kubectl [...args: string] {

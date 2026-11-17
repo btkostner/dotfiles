@@ -6,7 +6,6 @@ export-env {
     condition: { "MISE_SHELL" in $env }
     code: { mise_hook }
   }
-  add-hook hooks.pre_prompt $mise_hook
   add-hook hooks.env_change.PWD $mise_hook
 }
 

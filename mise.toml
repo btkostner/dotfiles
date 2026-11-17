@@ -33,8 +33,7 @@ default_mode = "symlink"
 "brew:zoxide" = { version = "latest", os = "macos" }
 "apt:zoxide" = { version = "latest", os = "linux" }
 
-# Called by nushell's gh-npm.nu at every shell start. Ubuntu carries an old
-# gh in universe; the hook adds GitHub's own repository for a current one.
+# GitHub CLI is installed on each platform; authentication happens on demand.
 "brew:gh" = { version = "latest", os = "macos" }
 "apt:gh" = { version = "latest", os = "linux" }
 
@@ -354,9 +353,8 @@ mode = "template"
 source = "dotfiles/config/nushell/scripts/mise.nu.tmpl"
 mode = "template"
 
-[dotfiles."~/.config/nushell/scripts/starship.nu"]
-source = "dotfiles/config/nushell/scripts/starship.nu.tmpl"
-mode = "template"
+[dotfiles."~/.config/nushell/scripts/prompt.nu"]
+source = "dotfiles/config/nushell/scripts/prompt.nu"
 
 [dotfiles."~/.config/nushell/scripts/gh-npm.nu"]
 source = "dotfiles/config/nushell/scripts/gh-npm.nu.tmpl"
