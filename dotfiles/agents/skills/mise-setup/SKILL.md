@@ -23,6 +23,8 @@ Enable `[settings] lockfile = true` and commit `mise.lock`. In monorepos,
 also set `[monorepo] lockfile = true` for one root tool lockfile. Declare
 `experimental = true` for features that require it. Set `min_version` to a
 version that supports the features in use; do not rely on global settings.
+Include `macos-arm64` and `linux-x64` in the tool lockfile. Add other
+platforms when developers or CI use them.
 
 Declare every required tool in `[tools]` or file-task tool metadata. Use
 explicit versions, consistent with the lockfile and CI. Put shared tools at
@@ -53,16 +55,37 @@ for unrelated packages or load environment files manually in each task.
 
 | Task | Contract |
 | --- | --- |
-| `setup` | Run `mise install`; use `mise install --monorepo` at a monorepo root. Do not call hk directly. |
+| `setup` | Run as `mise run --no-deps setup` to configure access and local files before installing dependencies. |
 | `build` | Build deliverables with declared generation and upstream build prerequisites. |
-| `check` | Run `hk check --all` after required builds and generation. No unit tests. |
-| `fix` | Run `hk fix --all`. Do not stage changes on a manual run. |
+| `check` | Check affected files with hk by default. Declare required builds and generation as mise prerequisites. No tests. |
+| `fix` | Fix affected files with hk by default. Report remaining errors and do not stage changes. |
 | `test` | Run unit tests, with required builds and generation as dependencies. Separate from `check` and hk. |
+| `migrate` | Run database migrations. Accept `--target`; default to `local`. |
+| `deploy` | Deploy to an explicit `--target`. Require the flag and hide the task to avoid accidental runs. |
+| `plan` | Show planned infrastructure changes without applying them. Use in infrastructure repos. |
 
 Prefer `generate`, `dev`, and `e2e` for code generation, development servers,
 and end-to-end tests. Type checking belongs in hk; do not add a separate
 `typecheck` task. Do not add successful no-op tasks for missing operations.
-Keep interactive authentication separate from setup.
+
+Add `migrate` and `deploy` only where they apply. Document the supported
+targets and reject unknown values. Target selection does not grant access
+to an environment.
+
+## First run and setup
+
+On a machine with mise and repository credentials, clone the repo, enter
+it, run `mise trust`, then run `mise run dev`. This must install missing
+tools and stale or missing dependencies, prepare local configuration and
+generated files, build required packages, and start the app. Do not require
+a separate install, code generation, or hook command. At a monorepo root,
+select a default app for `dev` or omit the root task.
+
+For a new machine or missing access, run `mise run --no-deps setup` so
+automatic dependency installation does not run before credentials are
+ready. Set up access first. The task can fetch environment configuration
+and write local files before it explicitly installs project dependencies.
+The repo configuration must load even when `.env` does not exist.
 
 ## Install hooks and dependencies
 
@@ -80,14 +103,12 @@ postinstall = 'if [ "${CI+x}" != x ]; then hk install --mise; fi'
 [settings]
 experimental = true
 lockfile = true
-
-[tasks.setup]
-description = "Install project tools"
-run = "mise install"
 ```
 
-Use `mise install --monorepo` for root setup in a monorepo. Include
-`--include-task-tools` when setup must preinstall tools declared only on tasks.
+When setup explicitly installs tools, use `mise install --monorepo` at a
+monorepo root. Include `--include-task-tools` when setup must preinstall
+tools declared only on tasks. Keep hook installation in `postinstall`,
+not in the setup task itself.
 Keep hook installation out of build, check, fix, and test commands.
 
 Use `[deps.<provider>]` with `auto = true` for the actual package manager.
@@ -131,9 +152,9 @@ package cache. Use provider `depends` for provider ordering. Do not call
 
 A workspace with one manifest/lockfile boundary uses one provider at that
 boundary. Independent packages use their own providers. Automatic tracking
-handles package installation separately from the install-only `setup` task.
-Use `mise deps --monorepo` when an explicit all-package dependency install is
-needed; do not add hk commands to setup.
+handles normal runs. Use `mise deps` for an explicit dependency install
+after setup establishes access, or `mise deps --monorepo` when it must
+install dependencies across all packages.
 
 ## Task files
 
@@ -238,19 +259,16 @@ description = "Build apps and packages"
 depends = [{ task = "//...:generate", optional = true }]
 description = "Generate code across the repository"
 
-[tasks.setup]
-description = "Install all project tools"
-run = "mise install --monorepo"
-
 [tasks.test]
 depends = [{ task = "//...:test", optional = true }]
 description = "Run unit tests across the repository"
 ```
 
-Add short, unique `[monorepo.path_aliases]` entries for apps and packages so
-`mise run //api:check` works alongside `//apps/api:check`. Each alias names a
-configured project, not an arbitrary directory. Do not use reserved aliases
-that collide with the first segment of a configured project path.
+Add short, unique `[monorepo.path_aliases]` entries for apps and packages.
+Use the short form in developer commands, such as `mise run api:check`.
+Each alias names a configured project, not an arbitrary directory. Do
+not use reserved aliases that collide with the first segment of a
+configured project path.
 
 Keep package task implementations and language tools in the package. Keep
 shared tools and orchestration at the root. Use `:build` for the current
@@ -278,37 +296,38 @@ at the root and language-specific rules in package `hk.pkl` files. Exclude
 generated files and build output. Match hk's Pkl schema and built-in package
 versions to the installed hk tool.
 
-Have one `check` task run `hk check --all`, composing package rules through
-hk. Do not also run every child's hk check from the same root invocation.
-Root `check` must depend on the cached builds and generators required by
-those checks. Use wildcard prerequisites for repository-wide preparation;
-keep precise consumer edges in package tasks. For a repository where all
-checks need built packages, root configuration can use:
+Expose a task-level Boolean `--affected` flag on `check` and `fix`.
+Default to `true`. Affected files include branch changes since the merge
+base with the last fetched `origin/main`, plus local edits and untracked
+files. Include checks affected by shared config changes. From the repo
+root, select files across the repo; from a package, select files in that
+package's scope. Use the same selection for checks and fixes.
+Use `mise run check --affected=false` or `mise run fix --affected=false`
+for all eligible files in scope (`hk check --all` or `hk fix --all`).
+Do not use `mise run --affected check`; that flag selects workspace
+projects, not files. Do not add a separate `format` task.
 
-```toml
-[tasks.check]
-depends = ["build", "generate"]
-description = "Run quick checks across the repository"
-run = "hk check --all"
+Run hk once per root check, with package rules composed through hk.
+Declare the builds and generators that checks need as mise task
+prerequisites. hk rules and Git hooks must not install project
+dependencies, build packages, or generate files. The commit hook assumes
+dependencies are installed and required outputs are current. Use
+precise consumer edges in package tasks and wildcard prerequisites only
+for repository-wide preparation. Consumer build tasks still need their
+own generation edges.
 
-[tasks.fix]
-description = "Apply lint and format fixes"
-run = "hk fix --all"
-```
-
-Use narrower prerequisite patterns if only some packages need build output.
-Do not rely on root `generate` to order generation before consumers: consumer
-build tasks still need their own generation edges.
+When file selection needs a script, use `#USAGE` for the Boolean flag and
+`#MISE depends` on the `check` file task for its prerequisites.
 
 hk runs quick type, lint, and format checks only. Never run unit tests from
 hk, including commit hooks. Use staged file selection for commit hooks and
 `--all` for a complete manual or CI check. Preserve unstaged work when hooks
 apply fixes; use hk staging controls instead of shell `git add` commands.
 
-CI installs declared tools and calls the same `mise run check` and
-`mise run test` commands as local development, separately. Run `e2e` when
-required. Do not duplicate checks in workflow YAML. With `CI` set, the
-postinstall hook must not install Git hooks.
+CI installs declared tools and runs `mise run check --affected=false` and
+`mise run test` separately. Run `e2e` when required. Do not duplicate checks
+in workflow YAML. With `CI` set, the postinstall hook must not install Git
+hooks.
 
 ## Audit and verification
 
@@ -316,14 +335,17 @@ After changing project setup:
 
 1. Inspect `mise tasks --all`, `mise tasks deps`, and `mise tasks graph`.
    Check ordering, wildcard coverage, alias resolution, and absence of cycles.
-2. Run top-level `mise run check` without manual generation or builds first.
-   Run an affected package check directly too. Confirm automatic dependency
-   installation and all build/generation prerequisites work.
+2. On a clean checkout with credentials, run `mise run dev` where available.
+   Run root and direct package checks without manual builds or generation.
+   Verify affected selection and `--affected=false` for check and fix.
 3. Run `mise run test` separately. Confirm neither hk nor `check` runs it.
 4. Verify a first cached run, an unchanged run, a changed source, and a deleted
    output. Confirm restoration or rebuilding, and that failures are not cached.
-5. Verify setup installs hk locally, skips it when `CI` is set, and does not
-   modify global Git settings. Check alphabetical sections and canonical files.
+5. Verify `mise run --no-deps setup` works without an existing `.env` and
+   establishes access before installing dependencies. Verify tool
+   installation installs hk hooks locally, skips them when `CI` is set,
+   and does not change global Git settings. Check alphabetical sections,
+   canonical files, and tool lockfile platform coverage.
 
 References:
 
