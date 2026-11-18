@@ -42,6 +42,10 @@ default_mode = "symlink"
 "brew-cask:font-fira-code-nerd-font" = { version = "latest", os = "macos" }
 "apt:fonts-firacode" = { version = "latest", os = "linux" }
 "brew:dockutil" = { version = "latest", os = "macos" }
+# The Apple Container runtime is supported only on Apple Silicon.
+"brew:socktainer" = { version = "latest", os = "macos/arm64" }
+"brew:docker" = { version = "latest", os = "macos/arm64" }
+"brew:docker-buildx" = { version = "latest", os = "macos/arm64" }
 
 # These come from third-party apt repositories that the pre-packages
 # hook below adds first.
@@ -60,7 +64,8 @@ default_mode = "symlink"
 # from formulae.brew.sh, which only knows homebrew-core, and falls back to
 # evaluating the tap's Casks/*.rb — which needs Ruby 3, while macOS ships 2.6.
 # That failure takes down `mise bootstrap plan` entirely, so `entire` stays a
-# plain `brew install` like docker-desktop. See the README.
+# plain `brew install`. Docker Desktop cannot be declared absent: native
+# `brew-cask` package support does not provide that state.
 
 # ---------------------------------------------------------------------------
 # Hooks
@@ -77,8 +82,11 @@ run = "sh scripts/linux-repos.sh"
 # the dotfiles phase wants to write, which would otherwise stop the run dead.
 # And omp is the binary the Zed settings name by absolute path, so it goes in
 # ahead of them rather than a phase later.
+# Stop only a registered Homebrew daemon before mise loads the native agent.
+# The migration script is safe to repeat and never unloads dev.mise.socktainer.
 [bootstrap.hooks.pre-dotfiles]
 run = [
+  "sh scripts/configure-socktainer.sh --migrate-service",
   "sh scripts/clear-nushell-stubs.sh",
   "sh scripts/migrate-xdg-paths.sh",
   "sh scripts/install-omp.sh",
@@ -187,6 +195,8 @@ args = [
   launchctl setenv AWS_SHARED_CREDENTIALS_FILE "$HOME/.config/aws/credentials"
   launchctl setenv AWS_CLI_HISTORY_FILE "$HOME/.local/state/aws/cli/history/history.db"
   launchctl setenv DOCKER_CONFIG "$HOME/.config/docker"
+  launchctl setenv DOCKER_HOST "unix:///opt/homebrew/var/run/socktainer/.socktainer/container.sock"
+  launchctl setenv BUILDX_BUILDER socktainer
   launchctl setenv CARGO_HOME "$HOME/.local/share/cargo"
   launchctl setenv RUSTUP_HOME "$HOME/.local/share/rustup"
   launchctl setenv GOPATH "$HOME/.local/share/go"
@@ -222,6 +232,17 @@ args = [
 ]
 run_at_load = true
 keep_alive = false
+
+# The Homebrew formula supplies binaries only; launchd owns the long-running
+# daemon so bootstrap does not depend on a brew services LaunchAgent.
+[bootstrap.macos.launchd.agents.socktainer]
+program = "/bin/sh"
+args = ["{{ config_root }}/scripts/start-socktainer.sh"]
+environment = { PATH = "/opt/homebrew/bin:/opt/homebrew/sbin:/usr/bin:/bin:/usr/sbin:/sbin" }
+run_at_load = true
+keep_alive_on_failure = true
+stdout_path = "~/Library/Logs/socktainer.log"
+stderr_path = "~/Library/Logs/socktainer.err.log"
 
 # ---------------------------------------------------------------------------
 # User
@@ -327,6 +348,11 @@ variants = [
   { os = "macos", target = "~/Library/Preferences/com.superlogical.rex.plist" },
 ]
 
+[dotfiles."~/.config/docker/config.json/buildx"]
+source = "dotfiles/config/docker/buildx.json.tmpl"
+template = "tera"
+merge = true
+
 # ---------------------------------------------------------------------------
 # Templated dotfiles
 #
@@ -353,8 +379,6 @@ mode = "template"
 source = "dotfiles/config/nushell/scripts/mise.nu.tmpl"
 mode = "template"
 
-[dotfiles."~/.config/nushell/scripts/prompt.nu"]
-source = "dotfiles/config/nushell/scripts/prompt.nu"
 
 [dotfiles."~/.config/nushell/scripts/gh-npm.nu"]
 source = "dotfiles/config/nushell/scripts/gh-npm.nu.tmpl"
@@ -368,12 +392,15 @@ mode = "template"
 # global toolchain it declares is only visible to mise after this run linked
 # it. A fresh `mise install` picks it up in the same pass.
 [tasks.bootstrap]
-description = "Install the global toolchain and wire up this repo's git hooks"
+description = "Install the global toolchain, configure Socktainer, and wire up this repo's git hooks"
 run = [
   "mise install",
   # The history watcher is declared in the global config, which this run only
   # just linked — the services phase ran before that existed.
   "mise bootstrap services apply --yes",
+  # The native LaunchAgent is loaded before the task; wait for its socket and
+  # configure DNS-safe networking and Buildx without starting BuildKit.
+  "sh {{ config_root }}/scripts/configure-socktainer.sh",
   # Config-based hooks on git 2.54+, so .git/hooks stays empty. Repo-local on
   # purpose: `hk install --global` would edit ~/.gitconfig, which this repo
   # tracks, and turn hk on for every repo on the machine.

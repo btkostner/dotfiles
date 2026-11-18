@@ -12,7 +12,7 @@ See [Linux](#linux) for what still does not work there.
 
 | Path | What it is |
 | --- | --- |
-| [`mise.toml`](mise.toml) | The whole declaration: packages, directories, removals, repos, the LaunchAgent, and the dotfile mapping |
+| [`mise.toml`](mise.toml) | The whole declaration: packages, directories, removals, repos, LaunchAgents, and the dotfile mapping |
 | [`dotfiles/`](dotfiles) | The actual config files, laid out to mirror where they land in `$HOME` |
 | [`hk.pkl`](hk.pkl) | Lint and format steps, and which git hooks run them |
 | [`scripts/`](scripts) | The bootstrap hooks, as shell rather than TOML so they get linted |
@@ -61,9 +61,9 @@ mise bootstrap --dry-run   # print every command the full run would execute
 ```
 
 One caveat on `--dry-run`: the `[tasks.bootstrap]` task runs for real on every
-invocation, dry or not. It installs the global toolchain, applies the history
-service, and installs repo-local hooks; add `--skip task` for a genuinely inert
-preview.
+invocation, dry or not. It installs the global toolchain, configures Socktainer
+on macOS arm64, applies the history service, and installs repo-local hooks;
+add `--skip task` for a genuinely inert preview.
 
 ## What runs, in order
 
@@ -75,15 +75,17 @@ declarations above safe to write in any order:
 2. **Files and directories** — creates `~/.ssh` (0700) and the work projects
    directory, and deletes the bash/zsh leftovers.
 3. **Repos** — clones AstroNvim into `~/.config/nvim`.
-4. **Dotfiles** — clears nushell's stub configs and installs omp, then
-   symlinks (and renders) everything in `dotfiles/`.
+4. **Dotfiles** — stops a registered legacy Homebrew Socktainer service before
+   deployment, clears nushell's stub configs and installs omp, then symlinks
+   (and renders) everything in `dotfiles/`.
 5. **macOS defaults** — Dock, keyboard and trackpad preferences, then
    `killall Dock` so they take effect.
-6. **LaunchAgents** — installs the XDG agent.
+6. **LaunchAgents** — installs the XDG and Socktainer agents.
 7. **User** — `chsh` to nushell.
 8. **Tools** — installs `[tools]` from every loaded mise config.
-9. **`[tasks.bootstrap]`** — installs the global toolchain, applies the history
-   service, and installs `hk`.
+9. **`[tasks.bootstrap]`** — installs the global toolchain, waits for
+   Socktainer and configures its Docker network and builder, applies the
+   history service, and installs `hk`.
 
 ## Notes on the pieces
 
@@ -200,9 +202,50 @@ mise ERROR evaluating the tap definition for entire requires Ruby 3 or newer
 ```
 
 That is not a warning. It fails `mise bootstrap plan` outright, so a single
-tapped cask takes the whole preview down. `entire` and `docker-desktop` are
-therefore installed but unmanaged. Declaring one would mean putting a Ruby 3
-on `PATH` purely so mise can read a `.rb` file.
+tapped cask takes the whole preview down. `entire` remains installed but
+unmanaged. Docker Desktop is not declared: mise's native `brew-cask` package
+support has no `absent` state, so bootstrap cannot remove it declaratively and
+will not add a destructive cleanup hook.
+
+**Socktainer is configured automatically on macOS arm64.** The Homebrew formula
+provides the Socktainer and Docker CLI binaries; a mise-managed native
+`dev.mise.socktainer` LaunchAgent runs `scripts/start-socktainer.sh` with an
+explicit Homebrew PATH. Before LaunchAgents are loaded, the pre-dotfiles hook
+stops the old `sh.brew.socktainer` service only if launchd still has that
+Homebrew job registered. On later bootstraps it leaves the native agent alone.
+The wrapper starts the Apple Container backend with the real user HOME and
+`--enable-kernel-install`, then runs Socktainer with an isolated HOME at
+`/opt/homebrew/var/run/socktainer`, `--no-auto-start`, and
+`--dns-upstream auto`. Docker clients use
+`unix:///opt/homebrew/var/run/socktainer/.socktainer/container.sock`.
+
+The final bootstrap task waits up to five minutes for Docker, creates the
+`socktainer-build` network if it is missing, and ensures the `socktainer`
+Buildx builder uses the `docker-container` driver and that network. An existing
+builder with different settings is reported rather than replaced. It does not
+start BuildKit during bootstrap; Buildx starts it on the first build. For
+example:
+
+```sh
+wrangler containers build . -t my-container:local
+```
+
+On a memory-constrained machine, stop the BuildKit container when finished:
+
+```sh
+docker buildx stop socktainer
+```
+
+The Docker config merge adds
+`/opt/homebrew/lib/docker/cli-plugins` to `cliPluginsExtraDirs` so the Docker
+CLI finds Buildx. It owns only that key, preserving authentication and other
+settings already in `~/.config/docker/config.json`. Linux renders an empty
+object and does not configure or start Socktainer. The Socktainer LaunchAgent
+writes to `~/Library/Logs/socktainer.log` and
+`~/Library/Logs/socktainer.err.log`. Docker Desktop is not automatically
+removed: mise's native Homebrew cask support does not support declaring a cask
+absent, so bootstrap does not try to uninstall it. Use the formula-provided
+Docker CLI with Socktainer instead.
 
 **mise is not in `[bootstrap.packages]`.** It installs itself from
 [mise.run](https://mise.run) and stays outside every package manager, which is the whole
@@ -211,8 +254,9 @@ answers `mise self-update` with *"self-update is disabled for this install"*.
 Keeping it unmanaged is what lets `auto_update = true` in the global config do
 anything. The check is throttled by `auto_update_check_duration`, default 7d.
 
-**The LaunchAgent gets renamed.** mise namespaces every agent it writes, so
-what was `io.btkostner.setXDG` is now `dev.mise.setXDG`.
+**mise-managed LaunchAgents get renamed.** mise namespaces every agent it
+writes, so the XDG agent that was `io.btkostner.setXDG` is now
+`dev.mise.setXDG`; Socktainer's label is `dev.mise.socktainer`.
 
 **Fonts come from Homebrew** (`brew-cask:font-fira-code-nerd-font`) rather
 than unzipping a GitHub release into `~/Library/Fonts`.
@@ -329,9 +373,10 @@ curl -fsSL https://omp.sh/install | sh -s -- --binary
 
 [`scripts/install-omp.sh`](scripts/install-omp.sh) runs that from
 `[bootstrap.hooks.pre-dotfiles]`, ahead of the Zed settings that name the
-binary. `--binary` rather than the default, which builds from source through
-bun when bun happens to be on PATH: nothing here installs bun, and pinning the
-mode keeps the binary in one known place.
+binary. The same pre-dotfiles hook migrates Socktainer off Homebrew services
+before the native LaunchAgent loads. `--binary` rather than the default, which
+builds from source through bun when bun happens to be on PATH: nothing here
+installs bun, and pinning the mode keeps the binary in one known place.
 
 The binary lands in `~/.local/bin`, which is on PATH and writable, so
 `omp update` can replace it without sudo. `/usr/local/bin/omp` is symlinked at
