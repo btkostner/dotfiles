@@ -1,5 +1,4 @@
 [settings]
-always_keep_install = true
 env_file = "env"
 asdf_compat = true
 experimental = true
@@ -15,63 +14,11 @@ trusted_config_paths = [
 # there. Checks are throttled by auto_update_check_duration, default 7d.
 auto_update = true
 
-[settings.history]
-sync = "manual"
-
-# The history watcher: a LaunchAgent on macOS, a systemd user service on
-# Linux, no root either way. It checkpoints tracked files into a local git
-# history so an edit can be diffed or rolled back.
-#
-# This lives in the global config on purpose — `mode = "track"` entries are
-# "enrolled from the global configuration only", so a project config cannot
-# add them. Nothing is enrolled yet; `mise dot add <path>` does that.
-[bootstrap.services.mise-history]
-builtin = "history-watch"
-
-# Files the watcher checkpoints. These are plain config that nothing here
-# deploys — the templated and symlinked files cannot be listed, since an entry
-# is either deployed or tracked, and those already live in this repo's git
-# history anyway.
-#
-# Growing this is just another line. `mise dot add ~/.config/whatever` writes
-# it for you.
-#
-# Deliberately absent:
-#   github-copilot  auth.db is an OAuth token store
-#   1Password, op   credentials and session state
-#   raycast(-x)     ~450 MB of binary state, not config
-#   .omp/agent      config.yml, mcp.json, and APPEND_SYSTEM.md are deployed
-#                   by this repo; agent.db is the OAuth store, while models.db,
-#                   history.db and sessions/ are churn
-[dotfiles]
-"~/.config/gh/config.yml" = { mode = "track" }
-"~/.config/git/ignore" = { mode = "track" }
-
-# History commits land in a local git repo in plaintext, so anything that
-# carries a credential or is pure churn is kept out of it.
-[history]
-exclude = [
-  "**/*.lock",
-  "**/*.log",
-  "**/*token*",
-  "**/Cache/**",
-  "**/cache/**",
-  "**/node_modules/**",
-]
-
-# A repo of its own, not this one. The history store is a separate git
-# history — checkpoints under a `home/` prefix — so pushing it at the
-# bootstrap repo could never fast-forward, and mise refuses to replace either
-# side ("local and origin histories are unrelated"). Private, because tracked
-# files are committed in plaintext.
-[history.origin]
-url = "git@github.com:btkostner/dotfiles-history.git"
-branch = "main"
-
 # Languages and their package managers only. Everything else — the shell, the
 # prompt, the CLI tools — comes from Homebrew or apt via [bootstrap.packages].
 [tools]
 fnox = "latest"
 node = "latest"
 npm = "latest"
+"npm:cf" = "latest"
 python = "latest"
