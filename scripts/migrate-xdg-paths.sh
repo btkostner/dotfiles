@@ -57,7 +57,6 @@ move_empty_target_dir() {
 
 move_file "$HOME/.aws/config" "$HOME/.config/aws/config"
 move_file "$HOME/.aws/credentials" "$HOME/.config/aws/credentials"
-move_dir_unless_target_exists "$HOME/.docker" "$HOME/.config/docker"
 move_dir_unless_target_exists "$HOME/.cargo" "$HOME/.local/share/cargo"
 move_dir_unless_target_exists "$HOME/.rustup" "$HOME/.local/share/rustup"
 move_dir_unless_target_exists "$HOME/.npm" "$HOME/.cache/npm"
@@ -84,7 +83,6 @@ mkdir -p \
   "$HOME/.cache/mise" \
   "$HOME/.cache/wrangler" \
   "$HOME/.config/aws" \
-  "$HOME/.config/docker" \
   "$HOME/.config/go" \
   "$HOME/.config/npm" \
   "$HOME/.config/kube" \

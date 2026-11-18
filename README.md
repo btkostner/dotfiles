@@ -61,7 +61,7 @@ mise bootstrap --dry-run   # print every command the full run would execute
 ```
 
 One caveat on `--dry-run`: the `[tasks.bootstrap]` task runs for real on every
-invocation, dry or not. It installs the global toolchain, configures Socktainer
+invocation, dry or not. It installs the global toolchain, checks Socktainer
 on macOS arm64, applies the history service, and installs repo-local hooks;
 add `--skip task` for a genuinely inert preview.
 
@@ -83,9 +83,8 @@ declarations above safe to write in any order:
 6. **LaunchAgents** — installs the XDG and Socktainer agents.
 7. **User** — `chsh` to nushell.
 8. **Tools** — installs `[tools]` from every loaded mise config.
-9. **`[tasks.bootstrap]`** — installs the global toolchain, waits for
-   Socktainer and configures its Docker network and builder, applies the
-   history service, and installs `hk`.
+9. **`[tasks.bootstrap]`** — installs the global toolchain, applies the history
+   service, checks the Socktainer socket, and installs `hk`.
 
 ## Notes on the pieces
 
@@ -203,49 +202,21 @@ mise ERROR evaluating the tap definition for entire requires Ruby 3 or newer
 
 That is not a warning. It fails `mise bootstrap plan` outright, so a single
 tapped cask takes the whole preview down. `entire` remains installed but
-unmanaged. Docker Desktop is not declared: mise's native `brew-cask` package
-support has no `absent` state, so bootstrap cannot remove it declaratively and
-will not add a destructive cleanup hook.
+unmanaged.
 
-**Socktainer is configured automatically on macOS arm64.** The Homebrew formula
-provides the Socktainer and Docker CLI binaries; a mise-managed native
-`dev.mise.socktainer` LaunchAgent runs `scripts/start-socktainer.sh` with an
-explicit Homebrew PATH. Before LaunchAgents are loaded, the pre-dotfiles hook
-stops the old `sh.brew.socktainer` service only if launchd still has that
-Homebrew job registered. On later bootstraps it leaves the native agent alone.
-The wrapper starts the Apple Container backend with the real user HOME and
-`--enable-kernel-install`, then runs Socktainer with an isolated HOME at
-`/opt/homebrew/var/run/socktainer`, `--no-auto-start`, and
-`--dns-upstream auto`. Docker clients use
-`unix:///opt/homebrew/var/run/socktainer/.socktainer/container.sock`.
+**Socktainer is configured automatically on macOS arm64.** Homebrew installs
+Apple's `container` CLI and Socktainer. The `dev.mise.socktainer` LaunchAgent
+starts the Apple Container service and installs its Linux kernel if needed.
+Bootstrap stops a registered legacy Homebrew Socktainer service before it
+loads the mise agent.
 
-The final bootstrap task waits up to five minutes for Docker, creates the
-`socktainer-build` network if it is missing, and ensures the `socktainer`
-Buildx builder uses the `docker-container` driver and that network. An existing
-builder with different settings is reported rather than replaced. It does not
-start BuildKit during bootstrap; Buildx starts it on the first build. For
-example:
-
-```sh
-wrangler containers build . -t my-container:local
-```
-
-On a memory-constrained machine, stop the BuildKit container when finished:
-
-```sh
-docker buildx stop socktainer
-```
-
-The Docker config merge adds
-`/opt/homebrew/lib/docker/cli-plugins` to `cliPluginsExtraDirs` so the Docker
-CLI finds Buildx. It owns only that key, preserving authentication and other
-settings already in `~/.config/docker/config.json`. Linux renders an empty
-object and does not configure or start Socktainer. The Socktainer LaunchAgent
-writes to `~/Library/Logs/socktainer.log` and
-`~/Library/Logs/socktainer.err.log`. Docker Desktop is not automatically
-removed: mise's native Homebrew cask support does not support declaring a cask
-absent, so bootstrap does not try to uninstall it. Use the formula-provided
-Docker CLI with Socktainer instead.
+Use `container build`, `container run`, and `container ls` directly. Socktainer
+exposes a Docker-compatible API on
+`/opt/homebrew/var/run/socktainer/.socktainer/container.sock` for tools that
+need that API. The `dev.mise.setXDG` LaunchAgent publishes this socket as
+`DOCKER_HOST` for newly launched apps. Bootstrap checks the socket over HTTP
+and does not install or configure Docker, Docker Desktop, or Buildx. The agent
+logs to `~/Library/Logs/socktainer.log` and `~/Library/Logs/socktainer.err.log`.
 
 **mise is not in `[bootstrap.packages]`.** It installs itself from
 [mise.run](https://mise.run) and stays outside every package manager, which is the whole

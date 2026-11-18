@@ -1,8 +1,0 @@
-{%- set uname = exec(command="uname -s") | trim -%}
-{% if uname == "Darwin" %}
-{
-  "cliPluginsExtraDirs": ["/opt/homebrew/lib/docker/cli-plugins"]
-}
-{% else %}
-{}
-{% endif %}

@@ -11,4 +11,4 @@ container system start --enable-kernel-install
 runtime_home=/opt/homebrew/var/run/socktainer
 mkdir -p "$runtime_home"
 export HOME="$runtime_home"
-exec socktainer --no-auto-start --dns-upstream auto
+exec socktainer "$@"
