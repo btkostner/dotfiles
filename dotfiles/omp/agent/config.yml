@@ -10,7 +10,7 @@ modelRoles:
   memory: local/lfm2-1.2b
   smol: openai-codex/gpt-6-luna
   advisor: openai-codex/gpt-6.1-sol:auto
-  default: openai-codex/gpt-6.2-sol
+  default: openai-codex/gpt-6.1-sol
 symbolPreset: nerd
 composer:
   shape: pi

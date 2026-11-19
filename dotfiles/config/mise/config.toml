@@ -21,6 +21,7 @@ fnox = "latest"
 node = "latest"
 npm = "latest"
 "npm:cf" = "latest"
+"npm:openwiki" = "latest"
 python = "latest"
 
 [env]

@@ -4,6 +4,14 @@
     "cloudflare": {
       "type": "http",
       "url": "https://mcp.cloudflare.com/mcp"
+    },
+    "openwiki": {
+      "command": "openwiki",
+      "args": [
+        "mcp",
+        "--host",
+        "omp"
+      ]
     }
   }
 }
