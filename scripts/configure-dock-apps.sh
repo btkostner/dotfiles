@@ -15,9 +15,6 @@ for app in \
   "/System/Applications/Reminders.app" \
   "/System/Applications/Music.app" \
   "/System/Applications/Notes.app" \
-  "/Applications/Notion.app" \
-  "/Applications/Linear.app" \
-  "/Applications/Paseo.app" \
   "/Applications/Zed.app" \
   "/Applications/Rex Beta.app" \
   "/System/Applications/System Settings.app"; do

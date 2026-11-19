@@ -41,7 +41,10 @@ default_mode = "symlink"
 # thing there for terminals that support it.
 "brew-cask:font-fira-code-nerd-font" = { version = "latest", os = "macos" }
 "apt:fonts-firacode" = { version = "latest", os = "linux" }
+
+# Needed for MacOS dock manipulation
 "brew:dockutil" = { version = "latest", os = "macos" }
+
 # The Apple Container runtime is supported only on Apple Silicon.
 "brew:socktainer" = { version = "latest", os = "macos/arm64" }
 "brew:container" = { version = "latest", os = "macos/arm64" }
@@ -51,6 +54,7 @@ default_mode = "symlink"
 "brew:nushell" = { version = "latest", os = "macos" }
 "apt:nushell" = { version = "latest", os = "linux" }
 
+# Used for secret access
 "brew-cask:1password-cli" = { version = "latest", os = "macos" }
 "apt:1password-cli" = { version = "latest", os = "linux" }
 
@@ -307,10 +311,7 @@ AppleShowAllExtensions = true
 [dotfiles]
 "~/.editorconfig" = "dotfiles/editorconfig"
 "~/.gitconfig" = "dotfiles/gitconfig"
-"~/.config/ghostty/config" = "dotfiles/config/ghostty/config"
 "~/.config/mise/config.toml" = "dotfiles/config/mise/config.toml"
-
-"~/.paseo/config.json" = "dotfiles/paseo/config.json"
 
 # Only omp's settings, MCP configuration, and system-prompt append are linked.
 # The sibling databases and sessions hold credentials or high-churn runtime
@@ -342,12 +343,6 @@ mode = "symlink-each"
 source = "dotfiles/config/nushell"
 mode = "symlink-each"
 exclude = ["*.tmpl"]
-
-[dotfiles."paseo/desktop-settings.json"]
-source = "dotfiles/config/paseo/desktop-settings.json"
-variants = [
-  { os = "macos", target = "~/Library/Application Support/Paseo/desktop-settings.json" },
-]
 
 [dotfiles."rex/preferences.plist"]
 source = "dotfiles/config/rex/preferences.plist.tmpl"
@@ -381,7 +376,6 @@ mode = "template"
 [dotfiles."~/.config/nushell/scripts/mise.nu"]
 source = "dotfiles/config/nushell/scripts/mise.nu.tmpl"
 mode = "template"
-
 
 [dotfiles."~/.config/nushell/scripts/gh-npm.nu"]
 source = "dotfiles/config/nushell/scripts/gh-npm.nu.tmpl"

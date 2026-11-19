@@ -22,3 +22,6 @@ node = "latest"
 npm = "latest"
 "npm:cf" = "latest"
 python = "latest"
+
+[env]
+TAPLO_EXTRA_CA_CERTS = "/Library/Application Support/Cloudflare/installed_cert.pem"

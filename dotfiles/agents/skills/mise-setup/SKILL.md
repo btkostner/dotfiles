@@ -17,7 +17,8 @@ files, package manifests, package-manager settings, and CI workflows first.
 
 Keep sections in `mise.toml` in alphabetical order by full table name. Sort
 task tables and tool entries too. Put top-level scalar keys before tables.
-Check examples and generated config for this order, not only TOML validity.
+Use exactly one blank line between sections. Give every task a description,
+including hidden tasks and aggregates.
 
 Enable `[settings] lockfile = true` and commit `mise.lock`. In monorepos,
 also set `[monorepo] lockfile = true` for one root tool lockfile. Declare
@@ -58,7 +59,7 @@ for unrelated packages or load environment files manually in each task.
 | `setup` | Run as `mise run --no-deps setup` to configure access and local files before installing dependencies. |
 | `build` | Build deliverables with declared generation and upstream build prerequisites. |
 | `check` | Check affected files with hk by default. Declare required builds and generation as mise prerequisites. No tests. |
-| `fix` | Fix affected files with hk by default. Report remaining errors and do not stage changes. |
+| `fix` | Fix affected files with hk by default. Report remaining errors. |
 | `test` | Run unit tests, with required builds and generation as dependencies. Separate from `check` and hk. |
 | `migrate` | Run database migrations. Accept `--target`; default to `local`. |
 | `deploy` | Deploy to an explicit `--target`. Require the flag and hide the task to avoid accidental runs. |
@@ -71,6 +72,10 @@ and end-to-end tests. Type checking belongs in hk; do not add a separate
 Add `migrate` and `deploy` only where they apply. Document the supported
 targets and reject unknown values. Target selection does not grant access
 to an environment.
+
+Use a single migration task with a validated `--target` flag and dispatch
+on `usage_target` with a shell `case`. Keep local and production settings
+inside their respective branches.
 
 ## First run and setup
 
@@ -166,6 +171,12 @@ Keep short commands in `mise.toml`. Put file tasks in `scripts/`, not
 includes = ["scripts"]
 ```
 
+Use a file only for complex operations. Keep simple setup sequences in
+TOML; name a setup file `scripts/setup` if setup needs a file.
+
+Invoke executable scripts by path. Let the shebang select the interpreter;
+do not prepend `bash`, `sh`, or `node`.
+
 Make file tasks executable and give them a shebang. Use `#MISE` metadata for
 descriptions, task-specific tools, dependencies, sources, outputs, caching,
 and environment settings. Use `#USAGE` for arguments, flags, defaults,
@@ -191,6 +202,8 @@ Use `depends` for prerequisites, not nested `mise run` calls. Dependencies can
 run in parallel; their list order does not specify execution order. If B needs
 A, declare that edge on B. Use sequential `run` entries for ordered steps of
 one operation. Use `wait_for` only for ordering tasks already selected.
+Depend directly on the prerequisite. Do not add a task that only wraps
+one prerequisite, except for a public root entry point to a default app.
 
 A direct package `check` must work after checkout without a manual build or
 generation step. Declare build links and generated-code prerequisites on each
@@ -273,9 +286,20 @@ configured project path.
 Keep package task implementations and language tools in the package. Keep
 shared tools and orchestration at the root. Use `:build` for the current
 package and qualified paths or aliases for cross-package dependencies.
-Where supported, `[monorepo.task_defaults.build] depends = ["^build"]` uses
-the native workspace dependency graph. Keep explicit generation edges that
-this graph does not express. Do not duplicate a native build system's graph.
+Mise reads membership from `pnpm-workspace.yaml` and dependency edges from
+each `package.json`. Use `[monorepo.task_defaults.build] depends = ["^build"]`
+instead of listing upstream packages. A task that declares its own `depends`
+replaces those defaults, so include `^build` along with local prerequisites.
+Mise follows transitive edges and skips upstream projects without that task.
+
+Use `[monorepo.projects]` to register projects outside the inferred graph.
+Use `depends_add` for real cross-project dependencies the manifests cannot
+express. Inspect `mise tasks graph --explain` before adding overrides.
+
+Run `mise run --affected '//packages/...:test'` from the root to select
+changed packages and their downstream dependents without selecting the root
+test aggregate. Use `--affected-explain --dry-run` to inspect selection.
+This project filter is separate from hk's file selection.
 
 Use `//...:<task>` for repository-wide aggregates, including deeply nested
 projects, instead of separate patterns for apps and packages. Use optional
@@ -296,35 +320,34 @@ at the root and language-specific rules in package `hk.pkl` files. Exclude
 generated files and build output. Match hk's Pkl schema and built-in package
 versions to the installed hk tool.
 
-Expose a task-level Boolean `--affected` flag on `check` and `fix`.
-Default to `true`. Affected files include branch changes since the merge
-base with the last fetched `origin/main`, plus local edits and untracked
-files. Include checks affected by shared config changes. From the repo
-root, select files across the repo; from a package, select files in that
-package's scope. Use the same selection for checks and fixes.
-Use `mise run check --affected=false` or `mise run fix --affected=false`
-for all eligible files in scope (`hk check --all` or `hk fix --all`).
-Do not use `mise run --affected check`; that flag selects workspace
-projects, not files. Do not add a separate `format` task.
+Use hk's native modified-file selection instead of a custom Git selector.
+Declare `usage = 'flag "--affected" negate="--all" default=#true'` on
+`check` and `fix`. When `$usage_affected` is `false`, use `hk check --all`
+or `hk fix --all`. Otherwise use `hk check` or `hk fix`.
+Use `mise run check --all` or `mise run fix --all` for full scope.
+Do not use `mise run --affected check`; it selects projects, not files.
 
 Run hk once per root check, with package rules composed through hk.
 Declare the builds and generators that checks need as mise task
-prerequisites. hk rules and Git hooks must not install project
-dependencies, build packages, or generate files. The commit hook assumes
-dependencies are installed and required outputs are current. Use
-precise consumer edges in package tasks and wildcard prerequisites only
-for repository-wide preparation. Consumer build tasks still need their
-own generation edges.
+prerequisites. Use direct generation prerequisites for package and root
+tasks. Consumer builds must also declare the generation they need.
+Use the hook from `hk install --mise` as supplied. It runs through `mise x`
+with normal dependency preparation. Do not rewrite it or make hk run
+builds or generators.
 
-When file selection needs a script, use `#USAGE` for the Boolean flag and
-`#MISE depends` on the `check` file task for its prerequisites.
+In hk 2.4.0, `HK_MISE=1` also loads the Mise environment for each step's
+working directory, once per directory per hk run. Steps scoped by
+`subprojects` can use package-local tools through standard hk rules. Do not
+wrap those rules in `mise exec`. This uses `mise env`, which does not install
+dependencies. Keep dependency preparation in the Mise task and its
+prerequisites.
 
 hk runs quick type, lint, and format checks only. Never run unit tests from
 hk, including commit hooks. Use staged file selection for commit hooks and
 `--all` for a complete manual or CI check. Preserve unstaged work when hooks
 apply fixes; use hk staging controls instead of shell `git add` commands.
 
-CI installs declared tools and runs `mise run check --affected=false` and
+CI installs declared tools and runs `mise run check --all` and
 `mise run test` separately. Run `e2e` when required. Do not duplicate checks
 in workflow YAML. With `CI` set, the postinstall hook must not install Git
 hooks.
@@ -337,7 +360,7 @@ After changing project setup:
    Check ordering, wildcard coverage, alias resolution, and absence of cycles.
 2. On a clean checkout with credentials, run `mise run dev` where available.
    Run root and direct package checks without manual builds or generation.
-   Verify affected selection and `--affected=false` for check and fix.
+   Verify hk's default selection and `--all` for check and fix.
 3. Run `mise run test` separately. Confirm neither hk nor `check` runs it.
 4. Verify a first cached run, an unchanged run, a changed source, and a deleted
    output. Confirm restoration or rebuilding, and that failures are not cached.
